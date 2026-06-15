@@ -1,0 +1,349 @@
+2026-06-15 08:18:25 From JSystems Szkolenia To Everyone:
+	https://github.com/LucasMatuszewski/AI-Programming-Course-JSystem-15-06-2026# 
+	
+	Repo szkolenia - materiały szkoleniowe
+	
+2026-06-15 08:19:54 From JSystems Szkolenia To Everyone:
+	git clone https://github.com/LucasMatuszewski/AI-Programming-Course-JSystem-15-06-2026.git
+	
+2026-06-15 08:20:48 From JSystems Szkolenia To Everyone:
+	https://github.com/LucasMatuszewski/AI-Programming-Course-JSystem-15-06-2026/blob/main/course-materials/Course%20Notes%20-%20AI%20in%20Programming.md 
+	
+	Notatki ze szkolenia
+	
+2026-06-15 09:21:08 From Olivia JF To Everyone:
+	Mendix
+	
+2026-06-15 09:36:39 From Wojciech Łowczecki To Everyone:
+	Firma nie musi się chwalić, ze używa AI
+	Piotr K.:👍
+	
+2026-06-15 09:50:58 From JSystems Szkolenia To Everyone:
+	https://www.goodreads.com/en/book/show/228646231-if-anyone-builds-it-everyone-dies 
+	
+	Czarna strona AI
+	
+2026-06-15 09:53:30 From JSystems Szkolenia To Everyone:
+	Alignment
+	
+2026-06-15 09:54:28 From Piotr K. To Everyone:
+	Czy to Kübra?
+	
+2026-06-15 09:54:31 From Pawel To Everyone:
+	tak
+	
+2026-06-15 10:00:16 From JSystems Szkolenia To Everyone:
+	https://cursor.com/
+	
+2026-06-15 10:17:05 From JSystems Szkolenia To Everyone:
+	Fable 5
+	https://platform.claude.com/docs/en/about-claude/models/introducing-claude-fable-5-and-claude-mythos-5
+	
+2026-06-15 10:17:34 From JSystems Szkolenia To Everyone:
+	https://www.anthropic.com/news/fable-mythos-access 
+	
+	Fable b zablokowany
+	
+2026-06-15 10:19:43 From JSystems Szkolenia To Everyone:
+	Koniec przerwy 11:35
+	
+2026-06-15 10:29:34 From JSystems Szkolenia To Everyone:
+	Słownik pojęć przed szkoleniem:
+	https://github.com/LucasMatuszewski/AI-Programming-Course-JSystem-15-06-2026/blob/main/course-materials/AI%20dla%20Programist%C3%B3w%20-%20S%C5%82ownik%20przed%20szkoleniem.pdf
+	
+2026-06-15 10:29:54 From Daniel Włodarek To Everyone:
+	dzięki
+	
+2026-06-15 10:37:38 From JSystems Szkolenia To Everyone:
+	https://github.com/LucasMatuszewski/AI-Programming-Course-JSystem-15-06-2026/blob/main/course-materials/AI%20dla%20Programist%C3%B3w%20-%20S%C5%82ownik%20przed%20szkoleniem.pdf 
+	
+	Słownik przed szkoleniem
+	
+2026-06-15 10:39:28 From JSystems Szkolenia To Everyone:
+	Arena AI - ranking modeli - leaderboard - Elo score
+	https://arena.ai/
+	
+2026-06-15 10:51:42 From JSystems Szkolenia To Everyone:
+	https://handy.computer/ 
+	
+	Dyktowanie , transkrypcja
+	
+2026-06-15 10:55:43 From JSystems Szkolenia To Everyone:
+	Create me a website for the computer service Jack. Jack hates Macintoshes. He services only and exclusively PC computers. He has his own history, here connected with these Macs, why he decided to never service any Macintoshes again. Tell this story. Make this page dynamic, simple in HTML, but with animations on the buttons and generally with the whole story, too, about why he doesn't like Macintoshes and about the services he offers as a computer servicing company.
+	
+2026-06-15 10:55:47 From JSystems Szkolenia To Everyone:
+	Przykładowy prompt
+	
+2026-06-15 10:57:18 From JSystems Szkolenia To Everyone:
+	build a html website for Steves PC Repair, High-contrast dark mode + bold condensed headings + animated ticker + chunky category chips + magnetic CTA.
+	You must include the disclaimer that steve will not work on macs, he hates them, and their users, and include an origin story as to why
+	
+2026-06-15 10:59:33 From JSystems Szkolenia To Everyone:
+	GLM
+	https://chat.z.ai/
+	
+2026-06-15 11:09:26 From JSystems Szkolenia To Everyone:
+	https://replit.com/ 
+	
+	Cloud tool for Vibe Codding - używa różnych języków programowania
+	
+2026-06-15 11:09:51 From Wojciech Łowczecki To Everyone:
+	zrobiłem Your PC is broken.
+	glm-5.1 jest dużo wolniejszy niż laguna-xs.2 ele lepiej strona mi się podoba
+	
+2026-06-15 11:11:11 From JSystems Szkolenia To Everyone:
+	🚀 You’ve been invited to join the GLM Coding Plan! Enjoy full support for Claude Code, Cline, and 20+ top coding tools — starting at just $18/month. Subscribe now and grab the limited-time deal! 
+	👉Join now: https://z.ai/subscribe?ic=IA5VBRGQV4
+	
+2026-06-15 11:16:45 From JSystems Szkolenia To Everyone:
+	https://omarchy.org/ 
+	
+	Linux od DHH
+	
+2026-06-15 11:19:11 From JSystems Szkolenia To Everyone:
+	https://x.com/karpathy/status/1886192184808149383?lang=en 
+	
+	Powsttało określenie Vibe Coding
+	
+2026-06-15 11:25:41 From JSystems Szkolenia To Everyone:
+	https://platform.openai.com/tokenizer
+	
+2026-06-15 11:26:11 From JSystems Szkolenia To Everyone:
+	https://tiktokenizer.vercel.app/ 
+	
+	Tokeny - tokenizer
+	
+2026-06-15 11:26:50 From JSystems Szkolenia To Everyone:
+	To repozytorium zawiera materiały do 5-dniowego kursu AI w Programowaniu prowadzonego przez JSystems. Kurs skupia się na workflow pracy z agentami AI (Claude Code, OpenAI Codex CLI), a nie na jednym konkretnym narzędziu.
+	
+	Uczestnicy pracują w swoim preferowanym języku programowania (Java, Python, C#, Go, Rust i inne). Prowadzący demonstruje rozwiązania w TypeScript/Node.js, na przykład z Vercel AI SDK.
+	
+2026-06-15 11:37:30 From JSystems Szkolenia To Everyone:
+	https://github.com/juliusbrussee/caveman
+	
+2026-06-15 11:37:41 From JSystems Szkolenia To Everyone:
+	Skill do optymalizacji tokenów:
+	https://github.com/juliusbrussee/caveman
+	
+2026-06-15 11:46:20 From JSystems Szkolenia To Everyone:
+	Język PL - 1 słowo = ~ 2-3 tokeny
+	Język EN - 1 słowo = ~1.3 tokena
+	
+2026-06-15 11:49:21 From JSystems Szkolenia To Everyone:
+	AI coding sucks - przyjemność z programowania:
+	https://www.youtube.com/watch?v=0ZUkQF6boNg
+	
+2026-06-15 11:50:32 From JSystems Szkolenia To Everyone:
+	https://github.com/LucasMatuszewski/AI-Programming-Course-JSystem-15-06-2026/blob/main/course-materials/Course%20Notes%20-%20AI%20in%20Programming.md#stages-of-ai-assisted-programming-0--5
+	
+2026-06-15 11:53:14 From JSystems Szkolenia To Everyone:
+	https://github.com/LucasMatuszewski/AI-Programming-Course-JSystem-15-06-2026/blob/main/course-materials/Course%20Notes%20-%20AI%20in%20Programming.md#3-new-it-roles-in-the-agentic-era
+	
+2026-06-15 12:00:45 From JSystems Szkolenia To Everyone:
+	https://github.com/steipete
+	
+2026-06-15 12:01:10 From JSystems Szkolenia To Everyone:
+	Case Studies:
+	
+	https://github.com/LucasMatuszewski/AI-Programming-Course-JSystem-15-06-2026/blob/main/course-materials/Course%20Notes%20-%20AI%20in%20Programming.md#case-studies
+	
+2026-06-15 12:05:18 From JSystems Szkolenia To Everyone:
+	https://x.com/steipete/status/2025591780595429385
+	
+2026-06-15 12:07:34 From JSystems Szkolenia To Everyone:
+	https://www.linkedin.com/posts/galenh_principal-software-engineer-coreai-microsoft-activity-7407863239289729024-WTzf
+	
+2026-06-15 12:18:57 From JSystems Szkolenia To Everyone:
+	https://opencode.ai/
+	
+2026-06-15 12:25:37 From JSystems Szkolenia To Everyone:
+	https://opencode.ai/pl/download
+	
+2026-06-15 12:26:50 From JSystems Szkolenia To Everyone:
+	ollama ps
+	
+2026-06-15 12:30:32 From JSystems Szkolenia To Everyone:
+	koniec przerwy 14:15
+	
+2026-06-15 13:14:27 From JSystems Szkolenia To Everyone:
+	Kamil T. 108.143.240.244
+	Julia P. 20.56.75.77
+	Wojciech Ł. 20.86.57.103
+	Szymon A. 20.229.171.187
+	Oliwia J. 20.56.66.116
+	Piotr K. 20.224.49.100
+	Maciej Ł. 172.205.193.125
+	Kamil B. 20.56.168.30
+	Andrzej K. 52.149.96.18
+	Paweł A. 48.209.41.86
+	Daniel W. 20.13.24.97
+	
+2026-06-15 13:16:56 From JSystems Szkolenia To Everyone:
+	qP*a@^]w;J>(9eBGQtr~C
+	
+2026-06-15 13:17:19 From JSystems Szkolenia To Everyone:
+	labuser
+	
+2026-06-15 13:20:45 From JSystems Szkolenia To Everyone:
+	https://remmina.org/how-to-install-remmina/
+	
+2026-06-15 13:22:50 From JSystems Szkolenia To Everyone:
+	Perplexity AI z Revolut https://help.revolut.com/en-PT/help/profile-and-plan/my-plan-benefits/partnership-benefits/perplexity/
+	
+2026-06-15 13:24:05 From JSystems Szkolenia To Everyone:
+	macOS Remote: https://www.perplexity.ai/search/16193521-a82d-4970-be31-1cb0c1dd70c3
+	
+2026-06-15 13:24:16 From JSystems Szkolenia To Everyone:
+	https://www.perplexity.ai/search/jak-sie-logowac-do-hostow-zdal-Fhk1IagtSXC.MRywwd1www
+	
+2026-06-15 13:26:13 From JSystems Szkolenia To Everyone:
+	Daniel W. 20.13.24.97
+	
+2026-06-15 13:26:38 From JSystems Szkolenia To Everyone:
+	qP*a@^]w;J>(9eBGQtr~C
+	
+2026-06-15 13:26:44 From JSystems Szkolenia To Everyone:
+	labuser
+	
+2026-06-15 13:29:13 From JSystems Szkolenia To Everyone:
+	Marcin 20.224.50.86
+	
+2026-06-15 13:30:06 From Pawel To Everyone:
+	wklej proszę nazwę tego małego-lokalnego  LLMa do postawienia sobie w domu, dzięki!
+	
+2026-06-15 13:31:23 From JSystems Szkolenia To Everyone:
+	ollama run gemma4:e2b --verbose
+	
+2026-06-15 13:35:50 From JSystems Szkolenia To Everyone:
+	https://ollama.com/library/lfm2.5-thinking
+	
+2026-06-15 13:36:08 From JSystems Szkolenia To Everyone:
+	https://lmstudio.ai/
+	
+2026-06-15 13:37:07 From JSystems Szkolenia To Everyone:
+	Hosting modeli dla firmy, konkurencyjność:
+	https://github.com/vllm-project/vllm
+	
+2026-06-15 13:39:06 From JSystems Szkolenia To Everyone:
+	https://github.com/ggml-org/llama.cpp/tree/master/tools/server
+	
+2026-06-15 13:39:30 From JSystems Szkolenia To Everyone:
+	Hostowanie modeli: https://unsloth.ai/docs
+	
+2026-06-15 13:42:37 From JSystems Szkolenia To Everyone:
+	Gemma 4 
+	https://ollama.com/library/gemma4
+	
+2026-06-15 13:46:26 From JSystems Szkolenia To Everyone:
+	https://apps.apple.com/us/app/windows-app/id1295203466?mt=12
+	
+2026-06-15 13:51:59 From JSystems Szkolenia To Everyone:
+	https://status.claude.com/ 
+	
+	Dostępność serverów Claude
+	
+2026-06-15 14:06:04 From JSystems Szkolenia To Everyone:
+	https://openrouter.ai/pricing
+	
+2026-06-15 14:06:16 From JSystems Szkolenia To Everyone:
+	https://artificialanalysis.ai/evaluations/artificial-analysis-intelligence-index 
+	
+	Benchmarki
+	
+2026-06-15 14:13:34 From JSystems Szkolenia To Everyone:
+	build a html website for Steves PC Repair, High-contrast dark mode + bold condensed headings + animated ticker + chunky category chips + magnetic CTA.
+	You must include the disclaimer that steve will not work on macs, he hates them, and their users, and include an origin story as to why
+	
+2026-06-15 14:23:32 From JSystems Szkolenia To Everyone:
+	build a html website for Steves PC Repair, High-contrast dark mode + bold condensed headings + animated ticker + chunky category chips + magnetic CTA.
+	You must include the disclaimer that steve will not work on macs, he hates them, and their users, and include an origin story as to why
+	
+	Create new folder for this app, do not use existing subfolder
+	
+2026-06-15 14:29:11 From JSystems Szkolenia To Everyone:
+	Git for Windows
+	https://git-scm.com/install/windows
+	
+2026-06-15 14:34:52 From JSystems Szkolenia To Everyone:
+	Git branch
+	git commit
+	git state
+	git log
+	git add
+	git push - wypchni
+	git merge - połączenie kodu z kilku branchy
+	git pull - pobranie z serwera
+	
+2026-06-15 14:37:34 From Olivia JF To Everyone:
+	zostały 23min szkolenia
+	Kamil Bucholc:👍
+	
+2026-06-15 14:38:50 From Pawel To Everyone:
+	tak tak, do 16tej
+	Kamil Bucholc:👍
+	
+2026-06-15 14:45:35 From JSystems Szkolenia To Everyone:
+	https://chatgpt.com/codex/pricing/
+	
+2026-06-15 14:46:41 From JSystems Szkolenia To Everyone:
+	https://github.com/LucasMatuszewski/AI-Programming-Course-JSystem-15-06-2026/tree/main
+	
+2026-06-15 14:48:34 From JSystems Szkolenia To Everyone:
+	git clone https://github.com/LucasMatuszewski/AI-Programming-Course-JSystem-15-06-2026.git
+	
+2026-06-15 14:48:47 From JSystems Szkolenia To Everyone:
+	git clone
+	
+2026-06-15 14:58:00 From JSystems Szkolenia To Everyone:
+	Frameworki do aplikacji AI:
+	https://ai-sdk.dev/
+	
+2026-06-15 14:58:27 From JSystems Szkolenia To Everyone:
+	https://chat-sdk.dev/
+	
+2026-06-15 14:58:52 From JSystems Szkolenia To Everyone:
+	https://github.com/assistant-ui/assistant-ui 
+	
+	TypeScript
+	
+2026-06-15 15:00:41 From JSystems Szkolenia To Everyone:
+	https://github.com/openai/openai-java
+	
+2026-06-15 15:01:36 From JSystems Szkolenia To Everyone:
+	https://docs.spring.io/spring-ai/reference/api/chat/openai-chat.html
+	
+2026-06-15 15:02:06 From JSystems Szkolenia To Everyone:
+	https://docs.spring.io/spring-ai/reference/api/chat/comparison.html
+	
+2026-06-15 15:06:28 From Olivia JF To Everyone:
+	Muszę kończyć. Dziękuję za dzisiejsze szkolenie.
+	
+2026-06-15 15:18:46 From JSystems Szkolenia To Everyone:
+	sqlite vector
+	https://github.com/sqliteai/sqlite-vector
+	
+2026-06-15 15:22:34 From JSystems Szkolenia To Everyone:
+	https://github.com/mastra-ai/mastra 
+	
+	zaawansowani agenci AI
+	
+2026-06-15 15:23:06 From Kamil Bucholc To Everyone:
+	Czy na ten komunikat zwracać uwagę?
+	{F8A79771-D1CC-46D0-8B88-97F721638E46}.png
+	
+2026-06-15 15:23:07 From JSystems Szkolenia To Everyone:
+	https://www.langchain.com/
+	
+2026-06-15 15:25:05 From JSystems Szkolenia To Everyone:
+	https://docs.ag-ui.com/introduction 
+	Sterowanie UI przez agentów
+	
+2026-06-15 15:26:11 From JSystems Szkolenia To Everyone:
+	https://www.copilotkit.ai/
+	
+2026-06-15 15:27:38 From JSystems Szkolenia To Everyone:
+	https://github.com/langgraph4j/langgraph4j
+	
+2026-06-15 15:44:53 From JSystems Szkolenia To Everyone:
+	https://github.com/assistant-ui/assistant-ui
+	
