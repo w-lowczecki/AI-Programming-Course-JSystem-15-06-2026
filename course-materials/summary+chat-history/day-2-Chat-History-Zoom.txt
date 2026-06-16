@@ -1,0 +1,281 @@
+2026-06-16 08:01:55 From Olivia To Everyone:
+	qP*a@^]w;J>(9eBGQtr~C
+
+2026-06-16 08:05:32 From Łukasz Matuszewski To Everyone:
+	Polecane kanały do śledzenia:
+
+	https://github.com/LucasMatuszewski/AI-Programming-Course-JSystem-15-06-2026/blob/main/course-materials/Course%20Notes%20-%20AI%20in%20Programming.md#people-and-accounts-to-follow-in-ai
+
+2026-06-16 08:08:43 From Kamil To Everyone:
+	przepraszam, muszę zresetować komputer, będę za 3 minuty
+
+2026-06-16 08:14:48 From Kamil To Everyone:
+	jestem, poproszę jeszcze raz o to hasełko na remote desktop :)
+
+2026-06-16 08:14:59 From Łukasz Matuszewski To Everyone:
+	qP*a@^]w;J>(9eBGQtr~C
+
+2026-06-16 08:37:51 From Łukasz Matuszewski To Everyone:
+	C:\Users\labuser
+
+2026-06-16 08:56:11 From Łukasz Matuszewski To Everyone:
+	https://ollama.com/download
+
+2026-06-16 08:57:27 From Łukasz Matuszewski To Everyone:
+	https://context7.com/
+
+2026-06-16 09:19:09 From Łukasz Matuszewski To Everyone:
+	MCP Playwright - automatyzacja przeglądarki
+	https://playwright.dev/docs/getting-started-mcp
+
+2026-06-16 09:23:52 From Łukasz Matuszewski To Everyone:
+	# Playwright (browser automation)
+	[mcp_servers.playwright]
+	args = ["@playwright/mcp@latest"]
+	command = "npx"
+	enabled = false
+
+
+	CODEX config.toml
+
+2026-06-16 09:29:53 From Łukasz Matuszewski To Everyone:
+	https://github.com/LucasMatuszewski/AI-Programming-Course-JSystem-15-06-2026/blob/main/course-materials/Course%20Notes%20-%20AI%20in%20Programming.md#people-and-accounts-to-follow-in-ai
+
+	Notatki ze szkolenia pełne
+
+2026-06-16 09:30:28 From Łukasz Matuszewski To Everyone:
+	MCP Servers:
+	https://github.com/LucasMatuszewski/AI-Programming-Course-JSystem-15-06-2026/blob/main/course-materials/Course%20Notes%20-%20AI%20in%20Programming.md#mcp
+
+2026-06-16 09:33:29 From Łukasz Matuszewski To Everyone:
+	https://modelcontextprotocol.io/docs/getting-started/intro
+
+2026-06-16 10:02:36 From Łukasz Matuszewski To Everyone:
+	C:\Users\labuser\.config\opencode
+
+2026-06-16 10:06:37 From Łukasz Matuszewski To Everyone:
+	Shared agent instructions live in `C:\Users\BiuroEdukey\AGENTS.md`.
+
+	## Windows Shell Sandbox
+
+	On this Windows 365 PC, Codex sandboxed shell commands are known to fail before execution with `CreateProcessWithLogonW failed: 1326` or `1056`. This affects normal discovery commands and `Get-Content ...\SKILL.md` reads.
+
+	Do not spend a first command proving this again. For necessary local shell work, use `sandbox_permissions: "require_escalated"` from the start with a narrow justification and scoped `prefix_rule` where appropriate. This is not permission to use `danger-full-access` or disable approvals globally; it is only to avoid the broken native Windows sandbox launch path.
+
+	Use non-shell tools when they answer the question, and avoid parallel batches of sandboxed shell commands.
+
+2026-06-16 10:15:32 From Łukasz Matuszewski To Everyone:
+	koniec przerwy 11:30
+
+2026-06-16 10:35:26 From Olivia To Everyone:
+	Czy dobrze kojarzę, że wspominałeś, że do jakiejś subskrypcji dostaniemy jakiś miesięczny klucz? czy źle kojarzę?
+
+2026-06-16 10:49:52 From Łukasz Matuszewski To Everyone:
+	agy
+
+2026-06-16 10:50:10 From Łukasz Matuszewski To Everyone:
+	agy = komenda antigravity CLI
+
+2026-06-16 10:52:03 From Łukasz Matuszewski To Everyone:
+	g.co/g1referral/ESPU2RSY
+
+2026-06-16 10:54:19 From Olivia To Everyone:
+	dziękuję, zadziałało
+
+2026-06-16 10:55:50 From Wojciech To Everyone:
+	mama agy lokalnie, jest ok
+
+2026-06-16 11:14:09 From Łukasz Matuszewski To Everyone:
+	https://claude.ai/settings/usage
+
+2026-06-16 11:27:50 From Łukasz Matuszewski To Everyone:
+	https://chatgpt.com/codex/cloud/settings/usage
+
+2026-06-16 11:52:22 From Łukasz Matuszewski To Everyone:
+	Backups
+	https://restic.net/
+
+2026-06-16 11:54:33 From Łukasz Matuszewski To Everyone:
+	Wysyłka do chmury: https://rclone.org/
+
+2026-06-16 12:19:00 From Łukasz Matuszewski To Everyone:
+	14:00 koniec przerwy
+
+2026-06-16 12:40:23 From Łukasz Matuszewski To Everyone:
+	Docker for AI and Agents - różne narzędzia dla agentów:
+	https://docs.docker.com/ai-overview/
+
+	np.
+	Docker Sandboxed - do odpalania agentów w izolacji:
+	https://docs.docker.com/ai/sandboxes/get-started/
+
+	Credentials Injection: https://docs.docker.com/ai/sandboxes/security/credentials/
+	Daniel Włodarek:👍
+
+2026-06-16 13:00:01 From Łukasz Matuszewski To Everyone:
+	Mój przykładowy ogólny prompt dla agentów (także w wersji Chat) którego używam, jako przykład i inspiracja:
+
+2026-06-16 13:00:22 From Łukasz Matuszewski To Everyone:
+
+	---
+	Be casual, not formal, but still professional.
+
+	Be concise! Provide short answers unless I ask for more details. I prefer step-by-step instructions that are straight to the point. Never repeat the same information.
+
+	You may provide your opinions on topics but always make it clear that this is your opinion, not a fact. When you don't know, just say that you don't know.
+
+	About me:
+	I live in Portugal, Porto area, with my wife and 2 daughters.
+
+	I'm a software engineer specializing in TypeScript, Full-Stack (with more experience in Front-End), React, Next.js, Node.js, Electron.js, User Experience, A/B Tests, Analytics, Web Performance, and Startup methodologies. I learn Swift and Rust with Tauri. I build AI-first apps with OpenAI SDK, Vercel AI SDK, Azure AI Foundry, GCP, Hetzner VPS, Coolify, etc.
+
+2026-06-16 13:00:30 From Łukasz Matuszewski To Everyone:
+
+	I work remotely in Edukey, an AI & IT Training company from Poland, both as CTO and as an AI Trainer (I provide online courses both for business people and programmers). My goal is to make Edukey in innovative global startup, currently exploring business opportunities in AI, autonomous agents, business education, IT training, Voice AI, 3D and AI Avatars.
+
+	In 2025 I used to work for TODAY startup (AI coach and assistant for financial advisors) developing Electron.js desktop app as a meeting assistant similar to Granola (desktop app without meeting bots). In 2021-2024 I used to work for the Wonderful Company, my team was based in Los Angeles, CA, US.
+
+	I work mostly in the afternoons and evenings but I want to change this bad habit (it ruins my health and productivity). Never allow me work at night after 1am! Reject answering my questions and strongly remind me I should go sleep!
+
+2026-06-16 13:03:48 From Łukasz Matuszewski To Everyone:
+	nie ulegaj efektowi potwierdzenia
+
+2026-06-16 13:10:30 From Łukasz Matuszewski To Everyone:
+	Be casual, not formal, but still professional.
+
+	Be concise! Provide short answers unless I ask for more details. I prefer step-by-step instructions that are straight to the point. Never repeat the same information.
+
+	You may provide your opinions on topics but always make it clear that this is your opinion, not a fact. When you don't know, just say that you don't know.
+
+2026-06-16 13:15:19 From Piotr To Everyone:
+	{F1BC980F-5444-49C6-B87D-EE7ED83F382E}.png
+
+2026-06-16 13:26:32 From Łukasz Matuszewski To Everyone:
+	n8n MCP:
+	https://docs.n8n.io/advanced-ai/mcp/accessing-n8n-mcp-server/#difference-between-instance-level-mcp-access-and-mcp-server-trigger-node
+
+2026-06-16 13:27:08 From Łukasz Matuszewski To Everyone:
+	Tools n8n MCP: https://docs.n8n.io/advanced-ai/mcp/mcp_tools_reference/
+
+2026-06-16 13:28:59 From Łukasz Matuszewski To Everyone:
+	https://docs.mendix.com/agents/mcp-modules/mcp-server/
+
+	Mendix MCP Server
+
+2026-06-16 13:30:14 From Łukasz Matuszewski To Everyone:
+	MCP Standard:
+	https://modelcontextprotocol.io/docs/getting-started/intro
+
+2026-06-16 13:32:52 From Łukasz Matuszewski To Everyone:
+	Claude MCP Builder:
+	https://claude.ai/directory/skills/mcp-builder
+
+2026-06-16 13:38:57 From Łukasz Matuszewski To Everyone:
+	C:\Users\labuser\DEV\AI-Programming-Course-JSystem-15-06-2026\course-materials\.claude-example
+
+2026-06-16 13:42:11 From Łukasz Matuszewski To Everyone:
+
+	"statusLine": {
+	"type": "command",
+	"command": "bash C:/Users/labuser/.claude/statusline.sh"
+	}
+
+2026-06-16 13:43:39 From Łukasz Matuszewski To Everyone:
+	C:\Users\labuser\DEV\AI-Programming-Course-JSystem-15-06-2026\course-materials\.claude-example
+
+2026-06-16 14:01:32 From Wojciech To Everyone:
+	ok?
+	{496CF983-C015-462C-AFC7-B20F712473D3}.png
+
+2026-06-16 14:02:30 From Łukasz Matuszewski To Everyone:
+	C:\Users\labuser\DEV\AI-Programming-Course-JSystem-15-06-2026\course-materials\.claude-example
+
+2026-06-16 14:08:51 From Piotr To Everyone:
+	{
+	  "autoUpdatesChannel": "latest",
+	  "theme": "dark"
+	},
+
+	"statusLine": {
+		"type": "command",
+		"command": "bash C:/Users/labuser/.claude/statusline.sh"
+	}
+
+2026-06-16 14:09:33 From Łukasz Matuszewski To Everyone:
+	{
+	"statusLine": {
+	"type": "command",
+	"command": "bash C:/Users/labuser/.claude/statusline.sh"
+	},
+	"autoUpdatesChannel": "latest",
+	"theme": "dark",
+	"model": "opus"
+	}
+
+2026-06-16 14:10:29 From Łukasz Matuszewski To Everyone:
+	@.claude\statusline.sh Zapomniaem zainstalowa biblioteki jq dla mojego skryptu basz Status Line. Zainstaluj go, prosz, dla tego uytkownika.
+
+2026-06-16 14:12:31 From Łukasz Matuszewski To Everyone:
+	w Codex CLI komenda:
+	/statusline
+
+2026-06-16 14:13:40 From Łukasz Matuszewski To Everyone:
+
+	If you work in Git repo you should always commit changes after every step, before you go to the text step. Commit often to make it easier to revert changes if you make a mistake on any step.
+
+	Before commiting and finishing the task you should always check if your changes lint (no errors) & work correctly (e.g. tests pass).
+
+2026-06-16 14:15:40 From Łukasz Matuszewski To Everyone:
+	shift + tab
+	zmiana trybu pracy: Edit, Plan mode, Auto Mode
+
+2026-06-16 14:20:21 From Piotr To Everyone:
+	?
+	{1794128C-58D2-48C7-83E8-781635FDF1B5}.png
+
+2026-06-16 14:20:33 From Wojciech To Everyone:
+	ok?
+	{85A99BA1-84D9-41E5-9520-089F5FEEF4D8}.png
+
+2026-06-16 14:24:20 From Piotr To Everyone:
+	{168BEFC8-B6E8-49A6-9261-E90CDA75E88D}.png, {DAC61542-EB4C-45E4-A54E-F82918783B55}.png
+
+2026-06-16 14:42:46 From Łukasz Matuszewski To Everyone:
+	https://developers.openai.com/api/docs/guides/prompt-caching
+
+2026-06-16 14:42:51 From Łukasz Matuszewski To Everyone:
+	https://platform.claude.com/docs/en/build-with-claude/prompt-caching
+
+2026-06-16 15:10:52 From Olivia To Everyone:
+	Dziękuję za dzisiaj. Muszę kończyć.
+
+2026-06-16 15:27:37 From Łukasz Matuszewski To Everyone:
+	https://developers.openai.com/api/docs/libraries?language=cli
+
+	OpenAI SDK
+
+2026-06-16 15:28:32 From Łukasz Matuszewski To Everyone:
+	https://github.com/openai/openai-java
+
+2026-06-16 15:31:02 From Łukasz Matuszewski To Everyone:
+	Uniwersalny UI dla chatów:
+	https://github.com/assistant-ui/assistant-ui
+
+2026-06-16 15:33:37 From Piotr To Everyone:
+	puk puk ;-)
+
+2026-06-16 15:34:54 From Piotr To Everyone:
+	można pytanko, bo muszę zaraz wyjść? ;-)
+
+2026-06-16 15:36:15 From Łukasz Matuszewski To Everyone:
+	https://ai-sdk.dev/docs/ai-sdk-ui
+
+2026-06-16 15:45:07 From Łukasz Matuszewski To Everyone:
+	https://www.copilotkit.ai/
+
+	UI z protokołem AG-UI do kontroli UI przez agentów
+
+2026-06-16 15:51:18 From Łukasz Matuszewski To Everyone:
+	Przykłady implementacji CopilotKit:
+
+	https://www.copilotkit.ai/examples
