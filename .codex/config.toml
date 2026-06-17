@@ -8,7 +8,7 @@
 # ----------------------------
 # Basic model + behavior config
 # ----------------------------
-model = "gpt-5.4"                # Default model for cloud runs. CLI: codex --model gpt-5.4
+model = "gpt-5.5"                # Default model for cloud runs. CLI: codex --model gpt-5.4
 approvals_reviewer = "user"      # Who receives approval prompts. Usually "user".
 personality = "pragmatic"        # Style/tone preset (e.g., pragmatic/friendly/none depending on build).
 sandbox_mode = "workspace-write" # Command/file access policy: workspace-read, workspace-write, danger-full-access
@@ -40,13 +40,6 @@ oss_provider = "ollama"          # Default OSS (Open Source) models provider
 # Example:
 # [projects.'<your-project-path>']
 # trust_level = "trusted"
-
-# --------------------
-# Model migrations note
-# --------------------
-# Optional reminder layer: when a model name is deprecated, map it to a replacement.
-[notice.model_migrations]
-"gpt-5.3-codex" = "gpt-5.4"
 
 # ----------------
 # Windows sandboxing

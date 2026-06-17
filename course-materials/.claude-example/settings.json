@@ -93,8 +93,6 @@
       "Bash(chmod:*)",
       "Bash(chown:*)",
       "Bash(sudo:*)",
-      "Bash(curl:*)",
-      "Bash(wget:*)",
       "Bash(ssh:*)",
       "Bash(scp:*)",
       "Bash(docker run:*)",
@@ -114,6 +112,6 @@
 
   "statusLine": {
     "type": "command",
-    "command": "bash C:/Users/lucas/.claude/statusline.sh"
+    "command": "bash C:/Users/labuser/.claude/statusline.sh"
   }
 }
