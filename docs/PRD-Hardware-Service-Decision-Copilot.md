@@ -33,7 +33,7 @@ When a customer submits a complaint (claimed defect) or a return (change-of-mind
 4. User submits the form.
 5. System validates the form (see Acceptance Criteria). On any failure it keeps the user on the form and shows field-level errors.
 6. System processes the uploaded image (compression/normalization) and sends it to the multimodal LLM using the **complaint** image prompt: judge whether the equipment is damaged, what the damage is, and what could have caused it.
-7. System passes the image description plus all form data and the **complaint policy** document to the reasoning agent, which produces a decision (**Approve / Reject / Needs human review**) with a justification grounded in the policy.
+7. System passes the image description plus all form data and the **complaint policy** document to the reasoning agent, which produces a decision (**Approve / Conditional / Reject / Needs human review**) with a justification grounded in the policy.
 8. System transitions the user to the chat interface and shows the decision as the first assistant message: greeting, decision, explanation, and next steps, nicely formatted.
 9. User can continue the conversation (see 4.4).
 
@@ -44,7 +44,7 @@ When a customer submits a complaint (claimed defect) or a return (change-of-mind
 4. User submits the form.
 5. System validates the form. On failure it shows field-level errors and stays on the form.
 6. System processes the image and sends it to the multimodal LLM using the **return** image prompt: judge whether the equipment shows no damage and no signs of usage, i.e. whether it could be resold as new.
-7. System passes the image description plus form data and the **return policy** document to the reasoning agent, which produces a decision (**Approve / Reject / Needs human review**) with a justification grounded in the policy.
+7. System passes the image description plus form data and the **return policy** document to the reasoning agent, which produces a decision (**Approve / Conditional / Reject / Needs human review**) with a justification grounded in the policy.
 8. System transitions the user to the chat interface and shows the decision as the first assistant message (greeting, decision, explanation, next steps).
 9. User can continue the conversation (see 4.4).
 
@@ -96,10 +96,10 @@ When a customer submits a complaint (claimed defect) or a return (change-of-mind
 - **AC-12** If the multimodal model cannot assess the relevant condition, the system records the analysis as inconclusive and this is reflected in the agent's outcome (see AC-16).
 
 ### Agent decision
-- **AC-13** The agent receives the image description, all form fields, and the policy document matching the request type (complaint vs return) and produces one of three outcomes: **Approve**, **Reject**, or **Needs human review**.
+- **AC-13** The agent receives the image description, all form fields, and the policy document matching the request type (complaint vs return) and produces one of four outcomes: **Approve**, **Conditional**, **Reject**, or **Needs human review**.
 - **AC-14** The agent uses a different decision prompt for the complaint scenario and for the return scenario.
 - **AC-15** Every decision includes a justification that references the relevant policy basis and the equipment condition; a decision without a justification is invalid.
-- **AC-16** When the evidence is insufficient or contradictory, the agent returns **Needs human review** (or requests a clearer photo) and states what is missing; it does not fabricate Approve/Reject.
+- **AC-16** When the evidence is insufficient or contradictory, the agent returns **Needs human review** (or requests a clearer photo) and states what is missing; it does not fabricate an Approve/Conditional/Reject verdict.
 - **AC-17** The decision is presented as the **first assistant message** in the chat, containing: greeting, decision, explanation, and next steps, formatted for readability.
 
 ### Chat
@@ -178,7 +178,7 @@ The MVP injects two example policy documents into the agent prompt as the rules 
 
 ### 9.2 Chat screen
 - **Layout:** a conversation view with message bubbles (assistant on one side, user on the other), a message input field, and a send button at the bottom.
-- **First message:** the assistant's first bubble contains the decision: greeting, the outcome (Approve / Reject / Needs human review), the explanation/justification, and the next steps, formatted for readability (headings/list as appropriate).
+- **First message:** the assistant's first bubble contains the decision: greeting, the outcome (Approve / Conditional / Reject / Needs human review), the explanation/justification, and the next steps, formatted for readability (headings/list as appropriate).
 - **Interaction:** the user types follow-up questions or additional information and sends them; replies appear in the conversation in order.
 - **Loading state:** while the agent generates a reply, a typing/loading indicator is shown and the input is locked against duplicate sends.
 - **Error state:** if a service call fails, an inline error message appears with a retry affordance; no fabricated decision is shown.
@@ -206,7 +206,7 @@ flowchart TD
     K --> M[Agent + return policy]
     L --> N{Confident decision?}
     M --> N
-    N -->|Yes| O[Approve or Reject + justification]
+    N -->|Yes| O[Approve / Conditional / Reject + justification]
     N -->|No| P[Needs human review / request better photo + reason]
     O --> Q[Chat: first message = decision, explanation, next steps]
     P --> Q
@@ -229,19 +229,20 @@ flowchart TD
 The agent is a decision-support assistant for complaint and return cases on consumer electronics. It combines (a) an objective description of the equipment's condition from the multimodal model, (b) the structured intake data, and (c) the applicable policy document, to produce a justified recommendation and to answer follow-up questions about that specific case.
 
 ### Allowed
-- Produce one of three outcomes — **Approve**, **Reject**, **Needs human review** — with a justification grounded in the policy and the equipment condition.
+- Produce one of four outcomes — **Approve**, **Conditional**, **Reject**, **Needs human review** — with a justification grounded in the policy and the equipment condition.
 - Cite the relevant policy basis and the observed condition in its explanation.
 - Ask the user for a clearer photo or additional information when the evidence is insufficient.
 - Refine its explanation in chat when the user provides new, relevant information.
 
 ### Not allowed
 - Inventing policy rules, warranty terms, dates, or facts not present in the provided policy document or the case data.
-- Issuing a final Approve/Reject when the evidence is insufficient or contradictory — it must escalate to **Needs human review**.
+- Issuing a final Approve/Conditional/Reject when the evidence is insufficient or contradictory — it must escalate to **Needs human review**.
 - Executing or promising any action (refund, replacement, RMA, shipping); it only recommends.
 - Answering questions unrelated to the current complaint/return case.
 
 ### Decision categories and how each is communicated
-- **Approve** — the request qualifies under policy. Communicate the outcome, the policy basis, and the next steps.
+- **Approve** — the request fully qualifies under policy. Communicate the outcome, the policy basis, and the next steps.
+- **Conditional** — the request qualifies only partially or subject to a condition (e.g. partial refund, approval contingent on a restocking fee, or on the customer meeting a specific requirement). Communicate the outcome, the exact condition(s) and their policy basis, and the next steps.
 - **Reject** — the request does not qualify. Communicate the outcome, the specific policy reason(s), and what (if anything) the customer can do next.
 - **Needs human review** — evidence is insufficient/ambiguous or the case is borderline. Communicate that a human will review, state exactly what is missing or unclear, and what would help (e.g. a clearer photo).
 
@@ -262,7 +263,7 @@ The agent is a decision-support assistant for complaint and return cases on cons
 Assumptions made while writing this PRD (override any of these if incorrect):
 
 1. **MVP scope** is the core flow only: intake form → multimodal image analysis → agent decision → chat follow-up. Session/decision persistence (SQLite), customer-data/purchase-history lookup, and the RAG knowledge base from the source brief are deferred to phase 2 and listed in Out of Scope.
-2. **Decision outcomes** are three: Approve / Reject / Needs human review, with escalation on low confidence. If a binary verdict or a "Conditional/partial" outcome is preferred, AC-13 and Section 11 must change.
+2. **Decision outcomes** are four: Approve / Conditional / Reject / Needs human review, with escalation to human on low confidence. "Conditional" covers partial or condition-bound approvals (e.g. partial refund, restocking fee). Confirmed by the user.
 3. **Equipment category list** uses a standard consumer-electronics set (Section 8 → Functional). Replace with the company's actual catalog if one exists.
 4. **Low-confidence handling** defaults to escalation with an explanation (AC-16). The alternative "ask for a better photo first" is included as an allowed agent behavior.
 5. **Image limits** (one image; JPEG/PNG/WebP; ≤ 10 MB pre-compression) are reasonable defaults; confirm against the multimodal provider's actual input limits in the ADR.
