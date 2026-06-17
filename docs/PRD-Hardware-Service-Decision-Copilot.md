@@ -157,7 +157,7 @@ The MVP injects two example policy documents into the agent prompt as the rules 
 | Complaint policy / terms | `docs/policies/complaint-policy.md` | Injected into the agent prompt when Request type = **Complaint** |
 | Return policy / terms | `docs/policies/return-policy.md` | Injected into the agent prompt when Request type = **Return** |
 
-> Note: example content for both documents must be created as part of the MVP so the agent has rules to apply. Exact file format/location is an implementation detail to be confirmed in the ADR.
+> Note: example (seed) content for both documents is provided in `docs/policies/` so the agent has rules to apply. Exact storage format and injection mechanism are implementation details to be confirmed in the ADR.
 
 ---
 
@@ -267,7 +267,7 @@ Assumptions made while writing this PRD (override any of these if incorrect):
 3. **Equipment category list** uses a standard consumer-electronics set (Section 8 → Functional). Replace with the company's actual catalog if one exists.
 4. **Low-confidence handling** defaults to escalation with an explanation (AC-16). The alternative "ask for a better photo first" is included as an allowed agent behavior.
 5. **Image limits** (one image; JPEG/PNG/WebP; ≤ 10 MB pre-compression) are reasonable defaults; confirm against the multimodal provider's actual input limits in the ADR.
-6. **Policy documents** must be authored as example content during implementation; their exact storage format and injection mechanism are deferred to the ADR.
+6. **Policy documents** — example (seed) content is provided in `docs/policies/complaint-policy.md` and `docs/policies/return-policy.md`; their exact storage format and injection mechanism are deferred to the ADR.
 
 Open questions to resolve in the ADR / next iteration:
 - Which multimodal and reasoning models are used, and their concrete input/size limits.
