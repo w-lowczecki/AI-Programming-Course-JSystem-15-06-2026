@@ -301,9 +301,9 @@ Conceptual contracts only. Full per-field detail in ADR-002 and ADR-003.
 ```mermaid
 flowchart TB
     subgraph Browser["Browser (React / Next.js client)"]
-        Form["Intake Form\n(components/intake-form)"]
-        Chat["Chat View\n(components/chat + useChat)"]
-        Compress["Canvas compression\n(lib/image)"]
+        Form["Intake Form<br/>(components/intake-form)"]
+        Chat["Chat View<br/>(components/chat + useChat)"]
+        Compress["Canvas compression<br/>(lib/image)"]
         Form --> Compress
     end
 
@@ -320,7 +320,7 @@ flowchart TB
         Valid["lib/validation (zod)"]
     end
 
-    OpenRouter["OpenRouter API\n(multimodal model)"]
+    OpenRouter["OpenRouter API<br/>(multimodal model)"]
     PolicyFiles["docs/policies/*.md"]
 
     Form -- "multipart submit" --> Analyze
