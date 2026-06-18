@@ -44,3 +44,4 @@ Thumbs.db
 
 # Claude Code local settings (committed as example, but uncomment to ignore)
 # .claude/settings.local.json
+# CLAUDE.local.md
