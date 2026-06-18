@@ -172,11 +172,11 @@ Notes from course for JSystem — AI dla programistów: od pomysłu do MVP
 - **Autoregression**
   - model predicts future values in a sequence by using a linear combination of its own past values
   - one mistake may lead to cascade / domino effect of mistakes (better to start again - branching in ChatGPT, Cursor can also revert with back icon next to our prompts in history)
--  What LLM needs to support to use it as **AI Agent**???
+- What LLM needs to support to use it as **AI Agent**:
   - **Structured Output** / Json schema:
     - [OpenAI Structured Outputs Guide (JavaScript)](https://developers.openai.com/api/docs/guides/structured-outputs/?lang=javascript)
-   - [OpenAI Java SDK Examples (structured output at the end of the list)](https://github.com/openai/openai-java/tree/332e1a18b4a11469e528f0359c997ae2beecd04a/openai-java-example/src/main/java/com/openai/example)
-   - [Spring AI – OpenAI Structured Outputs](https://docs.spring.io/spring-ai/reference/api/chat/openai-chat.html#_structured_outputs)
+    - [OpenAI Java SDK Examples (structured output at the end of the list)](https://github.com/openai/openai-java/tree/332e1a18b4a11469e528f0359c997ae2beecd04a/openai-java-example/src/main/java/com/openai/example)
+    - [Spring AI – OpenAI Structured Outputs](https://docs.spring.io/spring-ai/reference/api/chat/openai-chat.html#_structured_outputs)
   - **Function Calling** / Tool usage
 - **RAG** - architecture / concept of augmenting context / input with real data
   - Retrieval-Augmented Generation (creator regrets this name ;)
@@ -222,45 +222,56 @@ Notes from course for JSystem — AI dla programistów: od pomysłu do MVP
 - Tool Calling: [Berkeley Function Calling Leaderboard (BFCL) V4](https://gorilla.cs.berkeley.edu/leaderboard.html)
 - AIME (High School Math Exam): [AIME 2025 Benchmark Leaderboard | Artificial Analysis](https://artificialanalysis.ai/evaluations/aime-2025)
 - Market Share - Open Router: [LLM Rankings | OpenRouter](https://openrouter.ai/rankings)
+- Cost vs Intelligence Index [Artificial Analysis](https://artificialanalysis.ai/evaluations/artificial-analysis-intelligence-index?eval-cost=intelligence-vs-total-cost#eval-cost-tabs)
 
 ---
 
-### Best AI Codding Tools
+## Best AI Codding Tools
 - Gartner: [Best AI Code Assistants Reviews 2026 | Gartner Peer Insights](https://www.gartner.com/reviews/market/ai-code-assistants)
 - YT comparison: [Best AI Coding Tools for Developers in 2026 - YouTube](https://www.youtube.com/watch?v=pvMGRSZJ4Jw&t=330s)
 - **IDE & plugins:**
-  - GitHub Copilot: [GitHub Copilot · Plans & pricing · GitHub](https://github.com/features/copilot/plans)
-    - Not only GPT, Opus 4.5 in all plans: [Claude Opus 4.5 is now generally available in GitHub Copilot - GitHub Changelog](https://github.blog/changelog/2025-12-18-claude-opus-4-5-is-now-generally-available-in-github-copilot/)
-  - Cursor [Cursor](https://cursor.com/)
   - Zed [Zed — Love your editor again](https://zed.dev/) (Open Source)
     - [Should You Use Zed In 2026? - YouTube](https://www.youtube.com/watch?v=lRrElGM23h4)
-  - Antigravity by Google [Google Antigravity Product](https://antigravity.google/product)
+  - Cursor [Cursor](https://cursor.com/)
+  - GitHub Copilot: [GitHub Copilot · Plans & pricing · GitHub](https://github.com/features/copilot/plans)
+    - Not only GPT, Claude Opus in all plans: [Claude Opus 4.5 is now generally available in GitHub Copilot - GitHub Changelog](https://github.blog/changelog/2025-12-18-claude-opus-4-5-is-now-generally-available-in-github-copilot/)
+  - [Google Antigravity CLI](https://antigravity.google/product/antigravity-ide)
   - [Junie | IntelliJ IDEA Documentation](https://www.jetbrains.com/help/idea/junie.html)
   - [Cline - AI Coding, Open Source and Uncompromised](https://cline.bot/)
   - [Augment Code - The Software Agent Company](https://www.augmentcode.com/)
   - [Kilo - Move at Kilo Speed](https://kilo.ai/)
   - [Tabnine AI Code Assistant | Smarter AI Coding Agents. Total Enterprise Control.](https://www.tabnine.com/)
-  - Windsurf / Codeium
-  - .... list can go on....
+  - ~~Continue~~ (acquired by Cursor): https://www.continue.dev/
+  - ~~Windsurf / Codeium~~ (founders joined Google, team joined Cognition, it's Devin Desktop now): https://devin.ai/desktop/ (VSCode Clone)
+  - ... list can go on...
+- **Desktop apps:**
+  - [Claude Desktop](https://code.claude.com/docs/en/desktop-quickstart)
+    - [Linux - Claude Desktop Debian](https://github.com/aaddrick/claude-desktop-debian) (unofficial re-packaged Electron app - works well)
+  - [Codex App](https://developers.openai.com/codex/app)
+  - [Google Antigravity 2.0](https://antigravity.google/product/antigravity-2)
+  - [OpenCode](https://opencode.ai/download) (Open Source)
+  - [Goose](https://block.github.io/goose/) (Open Source)
 - **CLI tools:**
   - Knowledge Base with comparisons: [NotebookLM](https://notebooklm.google.com/notebook/44128edb-6841-4315-909c-4402b2d13bd1)
-  - Claude Code [Claude Code - AI coding agent for terminal & IDE | Claude](https://claude.com/product/claude-code)
-  - Gemini CLI (open source) [Build, debug & deploy with AI | Gemini CLI](https://geminicli.com/)
-  - Codex CLI [Codex CLI](https://developers.openai.com/codex/cli/)
-  - **Goose** (also has good Desktop app): [Goose](https://block.github.io/goose/) (Open Source)
-  - OpenCode [OpenCode | The open source AI coding agent](https://opencode.ai/) (Open Source)
-  - Aider [Aider - AI Pair Programming in Your Terminal](https://aider.chat/) (Open Source)
-  - Copilot CLI: [About GitHub Copilot CLI - GitHub Enterprise Cloud Docs](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/agents/about-copilot-cli)
-  - Droid by Factory: [Factory | Agent-Native Software Development](https://factory.ai/)
+  - [Claude Code - AI coding agent for terminal & IDE | Claude](https://claude.com/product/claude-code)
+  - [Codex CLI](https://developers.openai.com/codex/cli/)
+  - ~~Gemini CLI~~ (open source, killed by Google... replaced by closed source Antigravity CLI): [Google Gemini CLI](https://geminicli.com/)
+  - [Google Antigravity CLI](https://antigravity.google/product/antigravity-cli) (rewritten in Go, based on Crush and Bubblewrap)
+  - [Crush](https://github.com/charmbracelet/crush) (Open Source, works on FreeBSD!)
+  - [Goose](https://block.github.io/goose/) (Open Source)
+  - [OpenCode](https://opencode.ai/) (Open Source)
+  - [Aider](https://aider.chat/) (Open Source, pair programming)
+  - [GitHub Copilot CLI](https://docs.github.com/en/enterprise-cloud@latest/copilot/concepts/agents/about-copilot-cli)
+  - [Droid by Factory](https://factory.ai/)
   - Letta Code (MemGPT): [Quickstart | Letta Docs](https://docs.letta.com/letta-code/quickstart) (Open Source)
   - AIChat for Terminal commands help: [GitHub - aichat - Shell Assistant, Chat-REPL, RAG, AI Agent](https://github.com/sigoden/aichat) (Open Source)
   - ... many more....
 
-#### Codex - official plugin from OpenAI for VSCode "family":
+### Codex - official plugin from OpenAI for VSCode "family":
 - [https://developers.openai.com/codex/ide/](https://developers.openai.com/codex/ide/)
 - VSCode / Cursor / Antigravity / Windsurf: [https://open-vsx.org/extension/openai/chatgpt#review-details](https://open-vsx.org/extension/openai/chatgpt#review-details)
 
-#### Claude Code extension for VSCode "family":
+### Claude Code extension for VSCode "family":
 [https://open-vsx.org/extension/Anthropic/claude-code#review-details](https://open-vsx.org/extension/Anthropic/claude-code#review-details)
 
 
