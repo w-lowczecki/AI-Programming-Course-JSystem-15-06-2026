@@ -5,7 +5,6 @@
 This is a **course project** for the "AI dla programistów — od pomysłu do MVP" training by JSystems. The app is a multimodal AI assistant built live during the course. The domain, tech stack, and architecture are decided by the group through a structured process: research → PRD → ADR → implementation with agents.
 
 **Primary demo stack:** TypeScript/Node.js (Next.js, Vercel AI SDK).
-Participants may work in any language (Java, Python, C#, Go, Rust, etc.).
 
 All user-facing text in **Polish**.
 
