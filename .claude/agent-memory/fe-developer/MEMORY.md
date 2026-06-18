@@ -1,0 +1,3 @@
+- [Design system tokens & Tailwind v4 setup](project-design-system.md) — Token names, utility classes, file paths for the Spotify-inspired dark design system
+- [jsdom file upload quirks](feedback-jsdom-file-upload.md) — URL.createObjectURL stub + applyAccept:false needed for file input tests
+- [useChat v4 context attachment mechanism](feedback-useChat-v4-context.md) — Use static `body` option; DefaultChatTransport/prepareSendMessagesRequest are v5-only
