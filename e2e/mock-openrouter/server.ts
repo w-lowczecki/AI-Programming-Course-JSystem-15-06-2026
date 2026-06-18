@@ -28,6 +28,17 @@ import http from "http";
 export const MOCK_PORT = 9876;
 
 // ---------------------------------------------------------------------------
+// Diagnostic store — last streaming request body (for AC-23 context assertion)
+// ---------------------------------------------------------------------------
+
+let lastChatRequestBody: string | null = null;
+
+/** Returns the raw JSON body of the most recent streaming /chat/completions call */
+export function getLastChatRequestBody(): string | null {
+  return lastChatRequestBody;
+}
+
+// ---------------------------------------------------------------------------
 // Canned responses — matched to the FROZEN contract (lib/contracts/index.ts)
 // ---------------------------------------------------------------------------
 
@@ -228,6 +239,13 @@ function streamingResponse(content: string, id = "mock-stream-001"): string[] {
 
 export function createMockServer(): http.Server {
   const server = http.createServer((req, res) => {
+    // Diagnostic endpoint: GET /last-chat-body — returns the last streaming request body
+    if (req.method === "GET" && req.url === "/last-chat-body") {
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ body: lastChatRequestBody }));
+      return;
+    }
+
     // Match any path ending in /chat/completions (route-tolerant)
     if (req.method !== "POST" || !req.url?.endsWith("/chat/completions")) {
       res.writeHead(404);
@@ -260,6 +278,9 @@ export function createMockServer(): http.Server {
       const isStream = parsed.stream === true;
 
       if (isStream) {
+        // Record for AC-23 context assertion (diagnostic endpoint /last-chat-body)
+        lastChatRequestBody = body;
+
         // Streaming: SSE format
         const chatContent = buildChatReply(sentinel);
         const chunks = streamingResponse(chatContent);
