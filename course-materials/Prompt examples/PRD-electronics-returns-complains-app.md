@@ -1,6 +1,6 @@
 You are a product manager and system analyst. Your task is to prepare a comprehensive PRD (Product Requirements Document) for MVP of a product called **"Hardware Service Decision Copilot"** – a system that supports customer support and hardware service employees in making complain and return decisions.
 
-The application operates first as a form and them as a chat-based interface. The user journey follows this flow:
+The application operates first as a form and then as a chat-based interface. The user journey follows this flow:
 - User starts with a form asking for:
   - If this is complaint or return (select from a predefined list - 2 options)
   - Type of electronics equipment (select from a predefined list of categories)
@@ -8,7 +8,7 @@ The application operates first as a form and them as a chat-based interface. The
   - Date of purchase (date picker)
   - Reason for the complaint or return (description, textarea - obligatory for complaints)
   - upload of one image of the equipment showing it's condition (required, showing either that it's not damaged for return or the damage type for complains. BE should handle image compression before sending to multimodal LLM)
-- After submitting the image is sent to the backend and then to the multimodal LLM for analysis (provide different prompts for complaint = judge if damaged and how and what could cause it, and return scenarios = judge if not damaged and if it could be returned and sold again, so no signs of usage)
+- After submitting, the image is sent to the backend and then to the multimodal LLM for analysis (provide different prompts for complaint = judge if damaged and how and what could cause it, and return scenarios = judge if not damaged and if it could be returned and sold again, so no signs of usage)
 - Optional (to add later as additional features):
   - The backend retrieves existing customer data and purchase history from SQLite
   - Save in DB every user's session with every decision and action taken in that session
@@ -18,12 +18,14 @@ The application operates first as a form and them as a chat-based interface. The
 - Optional (to add later as additional features):
   - Agent has internal RAG knowledge base with information about electronics, specifications, and return/complaint procedures
 
-A separate ADR document will cover architectural details and technology choices; focus this PRD on functionality, system behavior, UX, and UI
+A separate ADR document will cover architectural details and technology choices; focus this PRD on functionality, system behavior, UX, and UI.
 
 
 ---
 
-## Example for AG-UI / CopilotKit Version:
+## Example for AG-UI / CopilotKit app version:
+
+> !!! **Remove it** if you don't use the AG-UI / CopilotKit, **or modify** above prompt if you do !!!
 
 The application operates as a chat-based interface. The user journey follows this flow:
 - An AI agent detects a customer's intent to submit a loan application

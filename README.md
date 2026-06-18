@@ -27,10 +27,23 @@ Główne notatki i zasoby znajdziesz w folderze `/course-materials`:
 
 - 📓 [**Course Notes — AI in Programming**](course-materials/Course%20Notes%20-%20AI%20in%20Programming.md) — główne notatki: trendy, narzędzia, benchmarki, metodologie agentic coding, best practices.
 - 📅 [**Agenda kursu**](course-materials/course-agenda.md) — program 5-dniowego szkolenia.
-- 📜 Skrypty z poszczególnych dni (`course-materials/summary+chat-history`)
-- 🔬 Materiały badawcze (`course-materials/Research/`)
-- 💡 Przykłady promptów (`course-materials/Prompt examples/`)
-- 🎓 Technika Ralph Wiggum Bash Loop (`course-materials/how-to-ralph-wiggum/`)
+- 📜 **Podsumowania** i **historia czatu Zoom** z poszczególnych dni (`course-materials/summary+chat-history`)
+- 📄 Przykłady promptów (`course-materials/Prompt examples/`), m.in.:
+  - [PRD generation](course-materials/Prompt%20examples/PRD-electronics-returns-complains-app.md)
+  - [Plan for SubAgents](course-materials/Prompt%20examples/Plan-SubAgents-matrix-dependency-map.md)
+  - [Design System reverse-engineering with Playwright](course-materials/Prompt%20examples/Design%20System%20reverse-engineering%20with%20Playwright.md)
+- 🎓 Technika Ralph Wiggum Bash Loop (`course-materials/how-to-ralph-wiggum/`) - obecnie Codex i Claude mają już funkcjonalności, które ją częściowo zastępują (np. `/loop` i `/goal`)
+- 🔬 Wyniki Deep Research (`course-materials/Research/`)
+- Claude Code example configs:
+  - `.bashrc` functions to use Claude CLI with other providers (e.g. OpenRouter, Z.ai): [course-materials/.bashrc](course-materials/.bashrc)
+  - `.claude/` example config folder for the user with `statusline.sh`, permissions and global instructions (`course-materials/.claude-example/`)
+
+---
+
+## Branche - Przykładowa aplikacja
+
+- Główny branch `main` zawiera materiały szkoleniowe i bazowe pliki z pustymi katalogami `app/` do budowania aplikacji oraz `docs/` do zapisywania PRD, ADR i planów.
+- Branch `feature/hardware-service-decision-copilot-prd` zawiera zaimplementowany przez agentów AI kod aplikacji szkoleniowej oraz gotowe pliki PRD, Design Guidelines, ADR i plany.
 
 ---
 
@@ -50,7 +63,7 @@ examples/            Przykładowe konfiguracje agentów (Java/Spring Boot)
 
 Kurs jest stack-agnostic. Technologie zostaną wybrane live z grupą podczas ADR. Możliwe opcje:
 
-- **TypeScript/Node.js** (demo prowadzącego): Next.js, Vercel AI SDK, Mastra
+- **TypeScript/Node.js** (demo prowadzącego): Next.js, Vercel AI SDK, (opcja: Mastra AI)
 - **Java**: Spring Boot, Spring AI (zobacz `examples/agent-configs/`)
 - Inne stacki wg preferencji uczestników
 
