@@ -5,6 +5,12 @@ dist/
 .next/
 .vite/
 
+# Next.js generated types
+next-env.d.ts
+
+# Temp scaffold dir (bootstrap artifact)
+scaffold-tmp/
+
 # IDE
 .idea/
 *.iws
