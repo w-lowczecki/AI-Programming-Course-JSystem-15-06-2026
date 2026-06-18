@@ -1,16 +1,28 @@
 /**
  * Playwright global setup — starts the mock OpenRouter server
- * before all tests run.
+ * before all tests run. Gracefully handles EADDRINUSE (server already running).
  */
+import type { Server } from "http";
 import { startMockServer } from "./mock-openrouter/server";
 
-// Store server handle on global so teardown can access it
-declare global {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  var __mockServer: any;
-}
+// Stash server handle so teardown can find it
+const state: { server?: Server; owned: boolean } = { owned: false };
+export { state as __mockState };
 
 export default async function globalSetup() {
-  const server = await startMockServer();
-  global.__mockServer = server;
+  try {
+    const server = await startMockServer();
+    state.server = server;
+    state.owned = true;
+    console.log("[globalSetup] Mock OpenRouter server started.");
+  } catch (err: unknown) {
+    const code = (err as NodeJS.ErrnoException).code;
+    if (code === "EADDRINUSE") {
+      // Server already running (manual smoke test or re-run) — reuse
+      console.log("[globalSetup] Mock server already running on port 9876, reusing.");
+      state.owned = false;
+    } else {
+      throw err;
+    }
+  }
 }

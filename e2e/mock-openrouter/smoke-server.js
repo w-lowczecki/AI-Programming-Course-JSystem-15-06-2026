@@ -129,7 +129,9 @@ const server = http.createServer((req, res) => {
       if (isVision) {
         const usable = sentinel !== "TEST-UNUSABLE";
         content = JSON.stringify({
-          description: usable ? `Urządzenie widoczne (${sentinel}). Brak uszkodzeń.` : "Zdjęcie nieczytelne.",
+          // Note: description must NOT contain sentinel strings — imageDescription is
+        // included verbatim in the decision prompt, which would confuse sentinel detection.
+        description: usable ? "Urządzenie widoczne na zdjęciu. Brak uszkodzeń." : "Zdjęcie nieczytelne.",
           usable,
           signals: usable ? { damaged: false, signsOfUse: false, likelyCause: null, damageType: null } : null,
         });

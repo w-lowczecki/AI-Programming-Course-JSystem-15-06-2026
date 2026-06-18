@@ -4,8 +4,6 @@
  */
 
 import { test, expect } from "@playwright/test";
-import path from "path";
-import fs from "fs";
 import { IntakeFormPage, FIXTURE_IMAGE_PATH } from "./pages/IntakeFormPage";
 
 test.describe("Validation — intake form", () => {
@@ -21,17 +19,22 @@ test.describe("Validation — intake form", () => {
     await form.categorySelect.selectOption("Smartfon");
     await form.modelInput.fill("TEST-APPROVE");
 
-    // Set a future date
+    // Set a future date via React-compatible nativeInputValueSetter
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     const futureDate = tomorrow.toISOString().slice(0, 10);
 
-    // Fill date field using JS (the HTML max attribute blocks UI, but direct JS fill can override)
     await form.purchaseDateInput.evaluate((el: HTMLInputElement, v: string) => {
+      // Remove the max constraint so the DOM accepts the value
       el.removeAttribute("max");
-      el.value = v;
-      el.dispatchEvent(new Event("change", { bubbles: true }));
+      // Use React's internal setter to trigger synthetic onChange
+      const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+        window.HTMLInputElement.prototype,
+        "value"
+      )?.set;
+      nativeInputValueSetter?.call(el, v);
       el.dispatchEvent(new Event("input", { bubbles: true }));
+      el.dispatchEvent(new Event("change", { bubbles: true }));
     }, futureDate);
 
     await form.imageInput.setInputFiles(FIXTURE_IMAGE_PATH);
@@ -77,38 +80,38 @@ test.describe("Validation — intake form", () => {
   // AC-08: unsupported image format shows error
   test("AC-08 — unsupported image format shows Polish error", async ({ page }) => {
     const form = new IntakeFormPage(page);
-    // Create a temp .txt file
-    const tmpPath = path.join(__dirname, "fixtures", "bad-format.txt");
-    fs.writeFileSync(tmpPath, "not an image");
 
-    try {
-      // Use setInputFiles with explicit mimeType override
-      await form.imageInput.setInputFiles({
-        name: "bad-format.gif",
-        mimeType: "image/gif",
-        buffer: Buffer.from("GIF89a fake gif"),
-      });
+    // Fill required fields first
+    await form.requestTypeReturn.check();
+    await form.categorySelect.selectOption("Smartfon");
+    await form.modelInput.fill("TEST-APPROVE");
+    await form.purchaseDateInput.fill("2026-06-01");
 
-      await form.requestTypeReturn.check();
-      await form.categorySelect.selectOption("Smartfon");
-      await form.modelInput.fill("TEST-APPROVE");
-      await form.purchaseDateInput.fill("2026-06-01");
-      await form.submit();
+    // Set a GIF file (not in accepted list)
+    await form.imageInput.setInputFiles({
+      name: "bad-format.gif",
+      mimeType: "image/gif",
+      buffer: Buffer.from("GIF89a fake gif content"),
+    });
 
-      // The validation error should mention accepted formats
-      await expect(
-        page.locator('[role="alert"]').filter({ hasText: "JPEG" }).first()
-      ).toBeVisible();
-    } finally {
-      if (fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath);
-    }
+    // The validation error should appear immediately (client-side) without submitting
+    await expect(
+      page.locator('[role="alert"]').filter({ hasText: "JPEG" }).first()
+    ).toBeVisible();
   });
 
   // AC-09: oversized image shows error
   test("AC-09 — image over 10 MB shows Polish error", async ({ page }) => {
     const form = new IntakeFormPage(page);
+
+    // Fill required fields first
+    await form.requestTypeReturn.check();
+    await form.categorySelect.selectOption("Smartfon");
+    await form.modelInput.fill("TEST-APPROVE");
+    await form.purchaseDateInput.fill("2026-06-01");
+
     // Create a fake 11MB JPEG buffer
-    const oversized = Buffer.alloc(11 * 1024 * 1024, 0xFF); // 11 MB of 0xFF (not valid JPEG but MIME type set)
+    const oversized = Buffer.alloc(11 * 1024 * 1024, 0xff);
 
     await form.imageInput.setInputFiles({
       name: "big-image.jpg",
@@ -116,12 +119,7 @@ test.describe("Validation — intake form", () => {
       buffer: oversized,
     });
 
-    await form.requestTypeReturn.check();
-    await form.categorySelect.selectOption("Smartfon");
-    await form.modelInput.fill("TEST-APPROVE");
-    await form.purchaseDateInput.fill("2026-06-01");
-    await form.submit();
-
+    // The validation error should appear immediately (client-side)
     await expect(
       page.locator('[role="alert"]').filter({ hasText: "10 MB" }).first()
     ).toBeVisible();
@@ -159,21 +157,21 @@ test.describe("Validation — intake form", () => {
 
   // AC-31: key labels are in Polish
   test("AC-31 — form labels are in Polish", async ({ page }) => {
-    await expect(page.locator("text=Typ zgłoszenia")).toBeVisible();
-    await expect(page.locator("text=Reklamacja")).toBeVisible();
-    await expect(page.locator("text=Zwrot")).toBeVisible();
-    await expect(page.locator("text=Kategoria sprzętu")).toBeVisible();
-    await expect(page.locator("text=Nazwa / model urządzenia")).toBeVisible();
-    await expect(page.locator("text=Data zakupu")).toBeVisible();
-    await expect(page.locator("text=Zdjęcie urządzenia")).toBeVisible();
-    await expect(page.locator("text=Wyślij zgłoszenie")).toBeVisible();
+    await expect(page.getByText("Typ zgłoszenia", { exact: true })).toBeVisible();
+    await expect(page.getByText("Reklamacja", { exact: true })).toBeVisible();
+    await expect(page.getByText("Zwrot", { exact: true })).toBeVisible();
+    await expect(page.getByText("Kategoria sprzętu", { exact: true })).toBeVisible();
+    await expect(page.getByText("Nazwa / model urządzenia", { exact: true })).toBeVisible();
+    await expect(page.getByText("Data zakupu", { exact: true })).toBeVisible();
+    await expect(page.getByText("Zdjęcie urządzenia", { exact: true })).toBeVisible();
+    await expect(page.getByText("Wyślij zgłoszenie", { exact: true })).toBeVisible();
   });
 
   // AC-01: exactly two request type options
   test("AC-01 — two request type options: Reklamacja and Zwrot", async ({ page }) => {
     await expect(page.locator('input[name="requestType"]')).toHaveCount(2);
-    await expect(page.locator("text=Reklamacja")).toBeVisible();
-    await expect(page.locator("text=Zwrot")).toBeVisible();
+    await expect(page.getByText("Reklamacja", { exact: true })).toBeVisible();
+    await expect(page.getByText("Zwrot", { exact: true })).toBeVisible();
   });
 
   // AC-02: equipment category selector has predefined list

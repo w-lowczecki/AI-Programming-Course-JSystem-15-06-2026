@@ -128,21 +128,19 @@ test.describe("Service error handling", () => {
     await form.fillReturnForm({ model: "TEST-ERROR" });
     await form.submit();
 
-    // Should show an error message — NOT a decision card
-    await expect(
-      page.locator('[role="alert"]').filter({ hasText: "problem" }).first()
-    ).toBeVisible(TIMEOUT);
+    // The mock returns 503 → route returns 503 → IntakeForm shows general error banner
+    // URL should NOT change to /chat
+    await expect(page).not.toHaveURL("/chat", { timeout: 15_000 });
 
     // Decision card must NOT be visible
     const chat = new ChatScreenPage(page);
     await expect(chat.decisionCard).not.toBeVisible();
 
-    // General error banner in the form (5xx path shows error message in IntakeForm)
-    // OR the general error state with retry
-    const hasErrorState =
-      (await page.locator('[data-testid="error-state"]').isVisible()) ||
-      (await page.locator('[role="alert"]').filter({ hasText: "problem" }).count()) > 0;
-    expect(hasErrorState).toBeTruthy();
+    // Error is shown either as general error banner or error state
+    // IntakeForm renders: <div role="alert">Wystąpił problem z serwisem...</div>
+    await expect(
+      page.locator('[role="alert"]').filter({ hasText: "problem" }).first()
+    ).toBeVisible({ timeout: 15_000 });
   });
 });
 

@@ -32,9 +32,12 @@ export const MOCK_PORT = 9876;
 // ---------------------------------------------------------------------------
 
 /** Vision (generateText) response — plain JSON in text content */
-function buildVisionResponse(usable: boolean, sentinel: string) {
+function buildVisionResponse(usable: boolean) {
+  // Note: description must NOT contain sentinel strings.
+  // The imageDescription is injected verbatim into the decision prompt body,
+  // which would cause the sentinel detector to match the wrong scenario.
   const description = usable
-    ? `Urządzenie widoczne na zdjęciu (${sentinel}). Brak widocznych uszkodzeń mechanicznych. Stan dobry.`
+    ? "Urządzenie widoczne na zdjęciu. Brak widocznych uszkodzeń mechanicznych. Stan dobry."
     : "Zdjęcie jest nieczytelne lub nie przedstawia urządzenia. Nie można ocenić stanu sprzętu.";
 
   const analysis = {
@@ -286,7 +289,7 @@ export function createMockServer(): http.Server {
 
         let content: string;
         if (isVisionCall) {
-          content = buildVisionResponse(!isUnusable, sentinel);
+          content = buildVisionResponse(!isUnusable);
         } else {
           // Decision call — generateObject expects JSON matching DecisionSchema
           content = JSON.stringify(buildDecisionResponse(sentinel));
