@@ -1,16 +1,20 @@
-# ADR-001: Frontend (Next.js UI, Form & Chat)
+# ADR-001: Frontend (Next.js App Router + AI SDK UI)
 
-**Date:** 2026-06-17
+**Date:** 2026-06-18
 **Status:** Accepted
-**Relates to:** [docs/ADR/000-main-architecture.md](000-main-architecture.md)
+**Relates to:** `docs/ADR/000-main-architecture.md`
 
 ---
 
 ## 1. Scope
 
-Covers the user-facing layer: the entry screen state machine (intake form ↔ chat), the intake form with validation and client-side image compression, the chat view with streaming replies and error/retry, and the Spotify-inspired Tailwind v4 theming.
+This ADR covers the **client UI**: the intake form screen, the processing/transition
+state, the chat screen (decision card + thread), error/empty/loading states, client
+validation, and the wiring of AI SDK UI (`useChat`) to `/api/chat`.
 
-**Does NOT cover:** server route handlers and image server-validation (ADR-002), LLM prompts/decision logic (ADR-003).
+**Not covered here:** server validation, image compression, model calls, prompts,
+and the decision schema (see `002-backend-api.md` and `003-ai-agent.md`). The
+frontend trusts the server for authoritative validation and decisions.
 
 ---
 
@@ -18,142 +22,194 @@ Covers the user-facing layer: the entry screen state machine (intake form ↔ ch
 
 | Library | Context7 Handle | Used for |
 |---|---|---|
-| Next.js | `/vercel/next.js` | App Router, client components, `next/font`, metadata/favicon |
-| React | `/reactjs/react.dev` | Component state, controlled inputs |
-| AI SDK React | `/vercel/ai` | `useChat` from `@ai-sdk/react`, `DefaultChatTransport`, `sendMessage`, message parts |
-| Tailwind CSS | `/tailwindlabs/tailwindcss.com` | v4 `@theme`, dark-first tokens, utility classes |
-| Zod | `/colinhacks/zod` | Client-side form schema (shared with server) |
-
-Design source: [docs/design-guidelines.md](../design-guidelines.md) and `assets/design-tokens.json`.
+| Next.js | `/vercel/next.js` | App Router routing, Server/Client Components, navigation |
+| AI SDK React | `/vercel/ai` (`@ai-sdk/react`) | `useChat`, message `parts`, status, `DefaultChatTransport` |
+| AI SDK core | `/vercel/ai` | `DefaultChatTransport`, `UIMessage` type, `prepareSendMessagesRequest` |
+| React | `/reactjs/react.dev` | Components, hooks, controlled inputs |
+| Tailwind CSS | `/tailwindlabs/tailwindcss.com` | Tokens from `design-guidelines.md` |
+| Shadcn/ui | `/shadcn-ui/ui` | Select, Input, Textarea, Button, Dialog, file dropzone |
+| Zod | resolve `Zod` | Client-side validation hints (shared schema) |
 
 ---
 
 ## 3. Component Design
 
-### View state machine (`app/page.tsx`, client component)
-- Holds `view: "form" | "chat"` and the active `case` (form data + decision + caseContext) in React state (in-memory only).
-- `form` → on successful `/api/analyze` response, store decision + caseContext, switch to `chat`, seed the chat with the first assistant message.
-- `chat` → "New case" resets all state back to an empty `form`.
+Two screens, navigated **Form → (processing) → Chat**, with "start new request"
+returning to Form (PRD §9 navigation). State is **client-only and ephemeral**.
 
-### Intake form (`components/intake-form/`)
-- Controlled fields rendered in PRD order: Request type, Equipment category, Name/Model, Date of purchase, Reason, Equipment photo.
-- **Request type** segmented control (Complaint/Return). Changing it toggles the Reason field's required/optional label and validation.
-- **Equipment category** select populated from the fixed enum.
-- **Date of purchase** date input with `max = today`; future dates rejected in UI and schema.
-- **Reason** textarea; required iff request type = complaint.
-- **Equipment photo**: single file input; on select → validate format/size, show thumbnail preview with remove/replace, run client compression to produce the upload blob.
-- **Submit**: disabled while submitting; shows processing state; the whole form is disabled during the request to prevent double submit.
-- **Validation display**: on submit, run the shared Zod schema; render field-level PL error messages beneath each invalid field; keep entered values; do not advance until clean.
+### Screen 1 — Intake form (`app/page.tsx` + form components)
+Responsibilities:
+- Render fields in PRD order (§9.1): request-type selector (Reklamacja/Zwrot),
+  category dropdown (10 values, AC-02), name/model text, date-of-purchase picker
+  (future blocked, AC-04), reason textarea (required/optional toggles with request
+  type, AC-05), single-image dropzone with thumbnail + remove (AC-06/11), submit.
+- **Client validation** (mirrors server, using the shared Zod schema) for fast
+  feedback; the server remains authoritative.
+- Image guardrails client-side: accept only JPEG/PNG/WebP, ≤ 10 MB; reject with
+  inline Polish error before upload (AC-08/09) — but never assume client check is
+  enough.
+- On submit: build `multipart/form-data`, POST `/api/analyze`, show **loading state**
+  (form locked, status text e.g. "Analizujemy zdjęcie i przygotowujemy ocenę…",
+  AC-07 submit blocked while invalid/processing).
+- On 200: store `decision`, `imageAnalysis`, `seedMessages`, `context`; navigate to
+  chat. On `422`: render per-field Polish errors, focus first error. On `5xx`: go to
+  error state with retry (AC-29), no decision shown.
 
-### Chat view (`components/chat/`)
-- Uses `useChat` (`@ai-sdk/react`) with `transport: new DefaultChatTransport({ api: "/api/chat", body: { caseContext } })` (or per-message `body`), input state via `useState`, send via `sendMessage`.
-- **Seeding the first message:** initialize `useChat` with the decision as the first assistant `UIMessage` (rendered from `firstMessage`/`decision`), so the chat opens on the decision (AC-17).
-- **Message rendering:** map `message.parts`; render `text` parts; the first assistant message renders the structured decision (heading per outcome, justification, conditions/missing-info, next steps, mandatory "recommendation, not binding" notice).
-- **Loading/typing indicator:** while `status` is streaming, show a typing indicator and lock the input + send button (AC-21).
-- **Error/retry:** on transport error, show an inline PL error with a retry affordance; never render a fabricated decision (AC-23).
-- **New case action:** button that calls the parent reset.
+Key components: `RequestTypeSelector`, `CategorySelect`, `PurchaseDatePicker`,
+`ReasonField` (required-state bound to request type), `ImageDropzone`,
+`SubmitButton`, `FieldError`, `FormErrorBanner`.
 
-### Client image compression (`lib/image/compress.ts`)
-- Input: a `File` (JPEG/PNG/WebP, ≤ `MAX_IMAGE_MB`). Output: a compressed `Blob`/`File`.
-- Draws the image onto a Canvas scaled to a max dimension (e.g. longest side ~1568 px, a common vision-model sweet spot — confirm against the chosen model's limits), re-encodes (e.g. JPEG/WebP at a quality target), and returns the smaller of original/compressed.
-- Pure, unit-testable; no React.
+### Screen 2 — Chat (`app/chat` + chat components)
+Responsibilities:
+- Initialize `useChat` with the **seed assistant message** (the decision card) as
+  initial messages, and a `DefaultChatTransport` pointed at `/api/chat`.
+- Use `prepareSendMessagesRequest` to attach the immutable **case `context`**
+  (form data + image description + policy kind) to every request body, alongside
+  messages (AC-23).
+- Render the **Decision card** as the first assistant message: greeting, prominent
+  outcome status label (AC-22), justification, next steps, disclaimer (AC-21).
+- Render subsequent turns as bubbles; show typing/streaming indicator while the
+  agent composes (AC-24, §9.3); lock duplicate sends.
+- Mark a **revised** decision visibly when the agent updates it (AC-25, §9.3).
+- Inline per-turn error + retry if a reply fails (AC-29); no fabricated content.
+- "Rozpocznij nowe zgłoszenie" (new request) clears conversation + form and returns
+  to Form (AC-28).
 
-### Styling / theme (`app/globals.css`)
-- Tailwind v4 via CSS-first config: `@import "tailwindcss";` + a `@theme` block mapping the design tokens to CSS variables (colors, radii, spacing, fonts) from [design-guidelines.md](../design-guidelines.md).
-- Dark-first: `background.base #121212`, text `#FFFFFF`/`#B3B3B3`, accent `brand.primary #1ED760`. Primary button = green pill, **black** text, weight 700, pill radius (`9999px`). Cards `#181818`→`#282828` hover, 8px radius. Inputs `#1F1F1F`, pill/`md` radius per control.
-- Fonts: fallback stack `"Helvetica Neue", Helvetica, Arial, sans-serif` (no license to SpotifyMixUI); load via `next/font` if a near-match (e.g. Montserrat) is desired for display titles.
+Key components: `ChatThread`, `MessageBubble`, `DecisionCard`, `DecisionStatusBadge`,
+`Composer`, `TypingIndicator`, `TurnError`, `NewRequestButton`.
+
+### State management
+- **Form state:** local component state (controlled inputs).
+- **Hand-off:** on success, the analysis result is passed to the chat screen via
+  client state (e.g. a lightweight client store or router state) — no server round
+  trip to re-fetch.
+- **Conversation:** owned by `useChat` (`messages` array). Cleared on new request /
+  reload (AC-27/28). No persistence.
 
 ---
 
 ## 4. Data Structures
 
-- **FormState** (client): mirrors `IntakeForm` (ADR-000 §5) with the image as a `File`; plus per-field `errors: Record<field, string>` and `isSubmitting: boolean`.
-- **AnalyzeResponse** (client view of `/api/analyze` output): `{ decision, imageAnalysis, caseContext, firstMessage }`.
-- **ChatState:** `UIMessage[]` managed by `useChat`, seeded with the first assistant decision message; `input: string` via `useState`.
-- **CaseContext:** sent on every chat turn (no raw image) — see ADR-000 §5.
+Frontend-facing shapes (typed via the shared TS types from `lib`):
+
+- **FormValues** — `{ requestType, category, model, purchaseDate, reason?, image:File }`.
+- **AnalyzeResponse** — `{ decision: Decision, imageAnalysis: { description, usable },
+  seedMessages: UIMessage[], context: CaseContext }`.
+- **CaseContext** — `{ requestType, category, model, purchaseDate, reason?,
+  imageDescription, policyKind }` (attached to every chat request).
+- **Decision** — `{ outcome, justification, nextSteps, missing?, conditions?,
+  disclaimer }` (rendered, not re-validated, by the UI).
+- **UIMessage** — AI SDK shape: `{ id, role, parts: [{type:'text', text}] }`.
+- **FieldErrors** — `Record<fieldName, polishMessage>` from a `422`.
 
 ---
 
-## 5. Interface Contracts (consumed)
+## 5. Interface Contracts
 
-- **`POST /api/analyze`** — `multipart/form-data`; returns `AnalyzeResponse` or `400` (validation, field-level PL errors) / `5xx` (retryable). See ADR-002.
-- **`POST /api/chat`** — JSON `{ messages, caseContext }`; returns a UI message stream. See ADR-002/003.
+The frontend consumes the two endpoints from ADR-000 §6:
 
-The frontend treats both routes as the only backend surface; it never imports `lib/ai/*`.
+- **`POST /api/analyze`** (multipart) → consumes `AnalyzeResponse` (200), `FieldErrors`
+  (422), `{error, retryable}` (5xx). The UI maps 422 → inline errors, 5xx → error
+  state.
+- **`POST /api/chat`** (JSON, via `useChat` transport) → consumes a streamed UI
+  message response. The UI attaches `messages` + `context` through
+  `prepareSendMessagesRequest`. On stream error → per-turn retry.
+
+The frontend exposes no public interface beyond these calls and the rendered UI.
 
 ---
 
 ## 6. Technical Decisions
 
-### `useChat` seeded with a synthetic first assistant message
-**Status:** Accepted · **Date:** 2026-06-17
-**Context:** The decision is produced by `/api/analyze` (not `/api/chat`), but it must appear as the first chat message (AC-17).
-**Decision:** Initialize `useChat` with `messages: [firstAssistantMessage]` built from the analyze response; subsequent turns hit `/api/chat`.
-**Rejected alternatives:** Re-call the model from `/api/chat` to "introduce" the decision — wasteful and risks drift from the validated decision.
-**Consequences:** (+) Single source of truth for the decision; instant first render. (−) Must construct a valid `UIMessage` shape manually.
-**Review trigger:** If the AI SDK changes `UIMessage` seeding APIs.
+### FE-1 — AI SDK UI `useChat` for the chat thread
+**Status:** Accepted · **Date:** 2026-06-18
+**Context:** The chat needs streaming replies, message state, status/typing
+indicators, and a customizable request body to carry case context.
+**Decision:** Use `@ai-sdk/react`'s `useChat` with `DefaultChatTransport` and
+`prepareSendMessagesRequest` to attach `context`. Seed it with the decision message
+as initial messages.
+**Rejected alternatives:**
+- Hand-rolled fetch + SSE parsing: re-implements what `useChat` provides; more bugs.
+- AI SDK RSC (`streamUI`): heavier than needed; UI route + `useChat` is the current
+  idiomatic path.
+**Consequences:** (+) streaming, statuses, message parts for free; (−) couples UI to
+the AI SDK UI message protocol (acceptable; it's the chosen stack).
+**Review trigger:** If the chat needs generative tool UIs or persistence.
 
-### Image compression in the browser via Canvas
-**Status:** Accepted · **Date:** 2026-06-17
-**Context:** Keep upload payloads small for Vercel functions; AC-09 wants reduction before the LLM.
-**Decision:** Compress client-side (Canvas) before upload; the server still validates (ADR-002).
-**Rejected alternatives:** Upload raw 10 MB to the server — slow, risks serverless limits.
-**Consequences:** (+) Fast uploads. (−) Quality varies by browser; covered by server guard + E2E across target browsers.
-**Review trigger:** Inconsistent results across Chrome/Edge/Firefox/Safari.
+### FE-2 — Decision card from typed fields, not raw model text
+**Status:** Accepted · **Date:** 2026-06-18
+**Context:** AC-21/22 require an ordered, readable card with a distinguishable
+outcome label.
+**Decision:** Render `DecisionCard` from the typed `Decision` (status badge from
+`outcome`; sections for justification, next steps, disclaimer). The seed assistant
+message text is generated from these fields server-side for chat history.
+**Rejected alternatives:** Render the model's free-text blob directly — fails the
+"visually distinguishable outcome" requirement and ordering guarantees.
+**Consequences:** (+) consistent, accessible card; (−) two representations (typed +
+rendered text) must stay consistent — generated together server-side.
+**Review trigger:** If outcomes or card sections change.
 
-### Tailwind v4 CSS-first theming from design tokens
-**Status:** Accepted · **Date:** 2026-06-17
-**Context:** A defined Spotify-inspired token set exists; v4 favors `@theme` over a JS config.
-**Decision:** Map `assets/design-tokens.json` into a `@theme` block; use semantic utility classes.
-**Rejected alternatives:** Tailwind v3 + `tailwind.config.js` — older pattern; v4 is current.
-**Consequences:** (+) Tokens live in CSS, match the guidelines. (−) Team must know v4 conventions.
-**Review trigger:** If a component library (e.g. shadcn/ui) is adopted with its own theming.
+### FE-3 — Client validation mirrors server via shared Zod schema
+**Status:** Accepted · **Date:** 2026-06-18
+**Context:** Fast inline feedback (AC-04–AC-09) without duplicating rules.
+**Decision:** Import the shared Zod form schema for client hints; the server
+re-validates authoritatively. Polish messages live with the schema.
+**Rejected alternatives:** Separate client rules — risk of drift from server truth.
+**Consequences:** (+) one source of validation truth; (−) schema must be
+isomorphic (no Node-only refinements in the shared part).
+**Review trigger:** If client/server validation needs diverge.
 
 ---
 
 ## 7. Diagrams
 
-### Component tree
-
+### Component / Class Diagram
 ```mermaid
 flowchart TD
-    Page["app/page.tsx (view state)"]
-    Page -->|view=form| Form["IntakeForm"]
-    Page -->|view=chat| Chat["ChatView (useChat)"]
-    Form --> Fields["Field components (select, date, textarea, file)"]
-    Form --> Preview["Image preview + remove"]
-    Form --> Compress["lib/image/compress"]
-    Chat --> MsgList["MessageList"]
-    MsgList --> Bubble["Message bubble (text / decision)"]
-    Chat --> Input["MessageInput + send"]
-    Chat --> Typing["Typing indicator / error+retry"]
-    Page --> NewCase["New case reset"]
+    Page[app/page.tsx Form shell] --> RTS[RequestTypeSelector]
+    Page --> Cat[CategorySelect]
+    Page --> Date[PurchaseDatePicker]
+    Page --> Reason[ReasonField required-by-type]
+    Page --> Drop[ImageDropzone]
+    Page --> Submit[SubmitButton]
+    Page --> Err[FieldError / FormErrorBanner]
+
+    ChatPage[app/chat] --> UseChat[[useChat + DefaultChatTransport]]
+    UseChat --> Thread[ChatThread]
+    Thread --> Card[DecisionCard]
+    Card --> Badge[DecisionStatusBadge]
+    Thread --> Bubble[MessageBubble]
+    ChatPage --> Composer[Composer + TypingIndicator]
+    ChatPage --> NewReq[NewRequestButton]
 ```
 
-### Submit + transition sequence
-
+### Sequence — form submit to chat hand-off
 ```mermaid
 sequenceDiagram
-    actor U as User
-    participant F as IntakeForm
-    participant P as page.tsx
+    participant U as User
+    participant F as Form
     participant API as /api/analyze
-    U->>F: Fill + pick image
-    F->>F: Validate (zod) + compress (canvas)
-    U->>F: Submit
-    F->>F: Disable form, show processing
-    F->>API: multipart
-    alt 400 validation
-        API-->>F: field errors (PL)
-        F->>U: Show inline errors, keep values
-    else success
-        API-->>P: AnalyzeResponse
-        P->>P: Seed chat with decision, view=chat
-        P->>U: Show first assistant message
-    else 5xx
-        API-->>F: retryable error
-        F->>U: Inline error + retry, no decision
-    end
+    participant C as Chat screen
+    U->>F: Fill + attach image
+    F->>F: Client Zod hints
+    F->>API: multipart submit (loading state)
+    API-->>F: 200 {decision, seedMessages, context}
+    F->>C: Hand off result (client state) + navigate
+    C->>C: useChat init with seedMessages
+    C->>U: Render DecisionCard (status badge + sections)
+```
+
+### Sequence — chat turn with context
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant C as Chat (useChat)
+    participant API as /api/chat
+    U->>C: Type follow-up
+    C->>API: prepareSendMessagesRequest -> {messages, context}
+    API-->>C: UI message stream (typing indicator)
+    C->>U: Streamed reply; mark "update" if revised
+    Note over C: On stream error -> per-turn retry, no fabricated text
 ```
 
 ---
@@ -164,21 +220,29 @@ sequenceDiagram
 
 | Scenario | Type | Input | Expected output | Edge cases |
 |---|---|---|---|---|
-| Required-field validation | Unit (schema) + E2E | Empty model / category | Field-level PL errors; submit blocked | All fields empty at once |
-| Future purchase date | Unit + E2E | Date > today | "data nie może być przyszła" error | Today's date allowed |
-| Reason conditional | Unit + E2E | Complaint w/o reason; Return w/o reason | Complaint blocked; Return allowed | Switching type re-validates |
-| Image format/size | Unit + E2E | .gif file / >10 MB | Inline rejection error; not sent | Exactly 10 MB boundary |
-| Client compression | Unit | Large JPEG | Smaller blob within max dimension | Tiny image returned unchanged |
-| Submit lock | E2E | Double-click submit | Only one request; form disabled | Rapid clicks |
-| First message render | E2E | Successful decision | Greeting + outcome + justification + next steps + notice (PL) | Each of 4 outcomes renders |
-| Chat send + typing | E2E | Follow-up question | Streamed reply; input locked while streaming | Empty input not sent |
-| Error + retry | E2E (mock 5xx) | Forced server error | Inline PL error + retry; no decision shown | Retry succeeds second time |
-| New case reset | E2E | Click "New case" | Empty form; prior chat gone | State fully cleared |
+| Reason required toggles with type | Unit | Switch to Complaint | Reason marked required; empty → error | Switch back to Return clears requirement |
+| Future date blocked | Unit | purchaseDate > today | Inline Polish error, submit blocked | Date = today allowed |
+| Image format/size guard | Unit | .gif / 12 MB file | Inline Polish error naming formats/limit | Exactly 10 MB allowed |
+| Single image only | Unit | Add 2nd image | Replaces first or blocked (AC-11) | Remove then re-add |
+| 422 from analyze | Integration | Server returns field errors | Inline errors, focus first, no navigation | Multiple field errors |
+| 5xx from analyze | Integration | Server 503 | Error state + retry, no decision | Retry succeeds |
+| Decision card render | Unit | Decision per outcome | Correct status badge + ordered sections + disclaimer | All five outcomes |
+| Chat sends context | Integration | Follow-up message | Request body includes messages + context | Long thread |
+| Revised decision marked | Unit | Assistant "update" message | Visibly marked as update | Multiple revisions |
+| New request clears state | E2E | Click new request | Form empty, conversation gone | After several turns |
+| Polish everywhere | E2E | Walk full flow | All visible text Polish | Error + empty states |
 
 ### Technical acceptance criteria
-
-- **TAC-101:** The shared Zod form schema rejects future dates, empty required fields, and (for complaints) empty reason — verified by unit tests without the DOM.
-- **TAC-102:** No client component imports from `lib/ai/*`; the only backend calls are to `/api/analyze` and `/api/chat`.
-- **TAC-103:** While a chat reply streams, the send control is disabled and a typing indicator is visible (E2E assertion).
-- **TAC-104:** All rendered labels, errors, and the decision message assert Polish text.
-- **TAC-105:** The compress helper never returns an image larger than the configured max dimension and preserves an accepted format.
+- **TAC-001-01** Reason field's required state is bound to request type; a Complaint
+  with empty/whitespace reason cannot submit (AC-05).
+- **TAC-001-02** Client rejects non-JPEG/PNG/WebP and > 10 MB before upload with a
+  Polish message (AC-08/09); server still re-checks.
+- **TAC-001-03** `DecisionCard` shows a distinct status label for each of the five
+  outcomes and always renders the disclaimer (AC-19/22).
+- **TAC-001-04** Every `/api/chat` request from the UI includes the case `context`
+  (form data + image description + policy kind) (AC-23).
+- **TAC-001-05** "New request" resets form state and `useChat` messages (AC-28).
+- **TAC-001-06** On analyze/chat service error the UI shows an explicit error/retry
+  and never renders a decision (AC-29/30).
+- **TAC-001-07** All asserted UI strings are Polish (AC-31).
+```

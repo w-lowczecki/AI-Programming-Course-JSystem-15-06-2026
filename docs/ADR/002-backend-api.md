@@ -1,16 +1,23 @@
-# ADR-002: Backend API (Route Handlers & Image Handling)
+# ADR-002: Backend API (Route Handlers, Validation, Image, Orchestration)
 
-**Date:** 2026-06-17
+**Date:** 2026-06-18
 **Status:** Accepted
-**Relates to:** [docs/ADR/000-main-architecture.md](000-main-architecture.md)
+**Relates to:** `docs/ADR/000-main-architecture.md`
 
 ---
 
 ## 1. Scope
 
-Covers the server boundary: the two Next.js route handlers (`/api/analyze`, `/api/chat`), server-side validation, image normalization/guarding, OpenRouter provider configuration, error mapping, and Vercel function configuration.
+This ADR covers the **server side** implemented as Next.js App Router route handlers:
+`POST /api/analyze` (validate → compress → vision → decision) and `POST /api/chat`
+(streaming chat continuation), plus the shared server libraries for validation
+(`lib/validation`), image processing (`lib/image`), and policy loading
+(`lib/policies`). It defines runtime, request/response contracts, error semantics,
+and orchestration order.
 
-**Does NOT cover:** the UI (ADR-001) or the prompt content and decision schema semantics (ADR-003).
+**Not covered here:** the provider/model setup, prompt content, and decision schema
+internals (see `003-ai-agent.md`); the UI (see `001-frontend.md`). This ADR consumes
+`lib/ai`'s functions but does not define them.
 
 ---
 
@@ -18,186 +25,255 @@ Covers the server boundary: the two Next.js route handlers (`/api/analyze`, `/ap
 
 | Library | Context7 Handle | Used for |
 |---|---|---|
-| Next.js | `/vercel/next.js` | Route handlers, `Request`/`Response`, `formData()`, runtime + `maxDuration` config |
-| AI SDK | `/vercel/ai` | `streamText`, `generateText` + `Output.object`, `toUIMessageStreamResponse`, `convertToModelMessages` |
-| OpenRouter provider | resolve `@openrouter/ai-sdk-provider` | `createOpenRouter({ apiKey })` → model factory |
-| Zod | `/colinhacks/zod` | Server-side validation of multipart fields and chat payload |
+| Next.js | `/vercel/next.js` | Route handlers, `request.formData()`, runtime config, `Response.json` |
+| AI SDK core | `/vercel/ai` | `createUIMessageStreamResponse`, `toUIMessageStream` (chat route) |
+| Zod | resolve `Zod` | Server-authoritative validation |
+| sharp | resolve `sharp` | Image resize/recompress |
 
 ---
 
 ## 3. Component Design
 
-### Provider config (`lib/ai/provider.ts`)
-- Reads `OPENROUTER_API_KEY`, `OPENROUTER_MODEL`, optional `OPENROUTER_BASE_URL`, attribution headers.
-- Exposes a single configured model factory used by vision/decision/chat. Centralizes the model ID so a swap is one change.
-- **Server-only**: never imported by client code; no `NEXT_PUBLIC_` exposure.
-
-### `/api/analyze` route handler
-Responsibilities, in order:
+### `POST /api/analyze` (Node.js runtime)
+Orchestration order (fail-fast):
 1. Parse `multipart/form-data` via `request.formData()`.
-2. **Server-side re-validation** with the shared Zod schema: requestType ∈ {complaint, return}; category ∈ enum; model non-empty; purchaseDate ≤ today; reason required iff complaint; exactly one image; image MIME ∈ {jpeg, png, webp}; size ≤ `MAX_IMAGE_MB`. On failure → `400` with a field-keyed PL error map.
-3. **Normalize image**: read bytes, confirm decodable, enforce the size cap; if still large, downscale before the vision call. Convert to the form the AI SDK expects for image parts (bytes/base64/`Uint8Array` + `mediaType`).
-4. Call **vision** (ADR-003) → `ImageAnalysis`.
-5. **Load policy** for the request type (`lib/policies/loader`).
-6. Call **decision** (ADR-003) with condition + form + policy → validated `Decision` (`Output.object`).
-7. Build the **PL first message** string from the decision (greeting + outcome + justification + conditions/missing-info + next steps + mandatory notice).
-8. Return JSON `{ decision, imageAnalysis, caseContext, firstMessage }`.
-9. On any LLM/provider error → map to `502/503` retryable error (PL); **never** return a partial/fabricated decision (AC-23).
+2. **Validate** all fields with the shared Zod schema (server-authoritative):
+   request type, category ∈ enum, model non-empty (trimmed), purchaseDate ≤ today,
+   reason required iff Complaint, exactly one image, format ∈ {JPEG,PNG,WebP}, size
+   ≤ 10 MB. On failure → `422 { errors }` (Polish messages). Nothing downstream runs.
+3. **Compress** the image via `lib/image` (resize to a bounded max dimension,
+   re-encode at bounded quality). Result is what goes to the model (AC-10), never the
+   raw upload.
+4. **Vision call** via `lib/ai.analyzeImage(requestType, compressedImage)` → returns
+   `ImageAnalysis { description, usable, signals? }`. Uses the **multimodal** model.
+5. **Decision call** via `lib/ai.decide(form, imageAnalysis, policyKind)` → returns a
+   schema-validated `Decision`. Uses the **decision** model. If `imageAnalysis.usable
+   === false` or signals are insufficient, the agent must return `NEEDS_MORE_INFO`
+   (AC-18), not APPROVE/REJECT.
+6. Build the **seed assistant message** (rendered decision card text) and the
+   immutable **CaseContext** (form fields + image description + policy kind).
+7. Return `200 { decision, imageAnalysis, seedMessages, context }`.
 
-### `/api/chat` route handler
-1. Parse JSON `{ messages: UIMessage[], caseContext }`; validate `caseContext` with Zod.
-2. Load the policy referenced by `caseContext.policyId`.
-3. Build the **system context** (form, image analysis, policy text, original decision, behavior rules — ADR-003) and convert UI messages with `convertToModelMessages`.
-4. `streamText({ model, system, messages })`.
-5. Return `result.toUIMessageStreamResponse()`.
-6. On error → emit a stream error the client surfaces as inline PL error + retry.
+Failure handling: any thrown provider/model error (steps 4–5) → `502/503
+{ error, retryable: true }`; **no decision is fabricated** (AC-29/30). Errors are
+logged server-side without leaking secrets.
 
-### Runtime config
-- Both AI routes export `runtime = "nodejs"` and `maxDuration = 60` (raise within plan limits). No edge runtime.
-- No filesystem writes. Policy files are read-only (bundled); `loader` caches them in module memory.
+### `POST /api/chat` (Node.js runtime, streaming)
+1. Parse JSON body: `{ messages: UIMessage[], context: CaseContext }`.
+2. Load the matching policy via `lib/policies` by `context.policyKind`.
+3. Build the system prompt = case context + policy doc + chat behavior rules
+   (in-scope only, may revise with a marked update, decline off-topic — AC-25/26).
+4. Call `lib/ai.chatStream(messages, systemPrompt)` using the **decision** model and
+   return `createUIMessageStreamResponse({ stream: toUIMessageStream(...) })`.
+5. On model failure → stream an error part; the client retries that turn. No
+   fabricated decision.
+
+### `lib/validation`
+- One Zod schema for the form (shared with the client) + a server-only refinement
+  layer for image bytes (format sniff + size). Polish messages colocated.
+- Exposes `parseAnalyzeForm(formData)` → `{ data } | { errors }`.
+
+### `lib/image`
+- `compress(file)` using sharp: enforce accepted formats, downscale to a bounded max
+  edge, re-encode (e.g. JPEG/WebP at bounded quality), return bytes + mediaType for
+  the vision call. Pure-ish, unit-testable with fixture images.
+
+### `lib/policies`
+- `loadPolicy(kind)` reads + caches `docs/policies/complaint-policy.md` (complaint)
+  or `docs/policies/return-policy.md` (return). In-memory cache; files are static.
 
 ---
 
 ## 4. Data Structures
 
-### `/api/analyze` request (multipart fields)
-| Field | Type | Constraint |
-|---|---|---|
-| `requestType` | string | `complaint` \| `return` |
-| `category` | string | one of the predefined enum |
-| `model` | string | non-empty, trimmed |
-| `purchaseDate` | string | ISO date, ≤ today |
-| `reason` | string | required iff complaint |
-| `image` | file | jpeg/png/webp, ≤ `MAX_IMAGE_MB` |
-
-### `/api/analyze` response (JSON)
-`{ decision: Decision, imageAnalysis: ImageAnalysis, caseContext: CaseContext, firstMessage: string }` — shapes per ADR-000 §5.
-
-### `/api/chat` request (JSON)
-`{ messages: UIMessage[], caseContext: CaseContext }`.
-
-### Error body (both routes, non-stream)
-`{ error: { code: "validation" | "provider_unavailable" | "bad_request", message: string /* PL */, fields?: Record<string,string> /* PL, validation only */, retryable: boolean } }`.
+- **AnalyzeForm (parsed)** — `{ requestType, category, model, purchaseDate, reason?,
+  image: { bytes, mediaType, sizeBytes } }`.
+- **FieldErrors** — `Record<fieldName, polishMessage>` (422 body).
+- **ImageAnalysis** — `{ description: string, usable: boolean, signals?: object }`.
+- **Decision** — defined in `003-ai-agent.md`; treated here as an opaque validated
+  object passed through to the response.
+- **CaseContext** — `{ requestType, category, model, purchaseDate, reason?,
+  imageDescription, policyKind }`.
+- **ChatRequestBody** — `{ messages: UIMessage[], context: CaseContext }`.
+- **AnalyzeResponse** — `{ decision, imageAnalysis: { description, usable },
+  seedMessages: UIMessage[], context: CaseContext }`.
 
 ---
 
-## 5. Interface Contracts (exposed)
+## 5. Interface Contracts
 
-### POST `/api/analyze`
-- **Input:** `multipart/form-data` (table §4).
-- **Success:** `200` JSON AnalyzeResponse.
-- **Errors:** `400` validation (`fields` map, `retryable:false`); `413` if image exceeds cap before processing; `502/503` provider failure (`retryable:true`).
-- **Notes:** Node runtime; `maxDuration` raised; all validation server-authoritative regardless of client checks.
+### `POST /api/analyze`
+- **Input:** `multipart/form-data` — `requestType` (`complaint|return`), `category`
+  (enum), `model` (string), `purchaseDate` (`YYYY-MM-DD`), `reason` (optional for
+  return), `image` (one file).
+- **Output 200:** `AnalyzeResponse`.
+- **Output 422:** `{ errors: FieldErrors }` — at least one of: missing/invalid field,
+  bad format (names accepted formats), too large (states 10 MB).
+- **Output 502/503:** `{ error: string, retryable: true }` on provider failure.
+- **Notes:** Node.js runtime (sharp); enforce request body size for the 10 MB image
+  (configure the route/proxy body limit accordingly). Not streamed.
 
-### POST `/api/chat`
-- **Input:** JSON `{ messages, caseContext }`.
-- **Success:** `200` UI message stream (`text/event-stream`-style per AI SDK).
-- **Errors:** `400` malformed body; stream-level error for provider failure (client shows retry). Off-topic handled in-content (AC-20), not as HTTP error.
-- **Notes:** Stateless; conversation re-sent each turn; no raw image in `caseContext`.
+### `POST /api/chat`
+- **Input:** `application/json` — `ChatRequestBody`.
+- **Output:** UI message stream (text) consumed by `useChat`.
+- **Errors:** stream an error part on model failure (client retries).
+- **Notes:** Node.js runtime; streaming; uses the decision/chat model only.
 
 ---
 
 ## 6. Technical Decisions
 
-### Server-authoritative validation (never trust the client)
-**Status:** Accepted · **Date:** 2026-06-17
-**Context:** Client validation is for UX; the server must enforce contracts and the image limits (AC-07/AC-08).
-**Decision:** Re-run the shared Zod schema and image checks on the server; reject with `400` + field-level PL errors.
-**Rejected alternatives:** Trust client validation — insecure, bypassable.
-**Consequences:** (+) Robust, testable boundary. (−) Some duplicated validation (mitigated by sharing the schema).
-**Review trigger:** Adding auth/roles or new fields.
+### BE-1 — `/api/analyze` is request/response; `/api/chat` is streamed
+**Status:** Accepted · **Date:** 2026-06-18
+**Context:** Analysis is a multi-step pipeline whose result hydrates the chat; the
+chat itself benefits from token streaming.
+**Decision:** `analyze` returns a single JSON payload after the pipeline completes;
+`chat` returns a UI message stream via `createUIMessageStreamResponse`.
+**Rejected alternatives:**
+- Stream `analyze` too: the decision card needs the complete structured decision
+  before render (AC-21 ordering, AC-22 status); streaming adds complexity for no UX
+  win here.
+**Consequences:** (+) simple, atomic decision; clear error semantics. (−) the user
+waits through a processing state (covered by the loading UI, §9.1/9.2 of PRD).
+**Review trigger:** If perceived analyze latency needs progressive feedback.
 
-### Node runtime + raised `maxDuration`; no edge
-**Status:** Accepted · **Date:** 2026-06-17
-**Context:** Vision + reasoning is multi-second; provider SDK fits Node.
-**Decision:** `runtime="nodejs"`, `maxDuration=60` on AI routes.
-**Rejected alternatives:** Edge runtime — tighter limits, SDK friction.
-**Consequences:** (+) Reliable long calls. (−) Cold starts; must stay within plan's max duration.
-**Review trigger:** A single call risks exceeding the platform max.
+### BE-2 — Server-authoritative validation; client checks are hints
+**Status:** Accepted · **Date:** 2026-06-18
+**Context:** AC-07/08/09 must hold even if the client is bypassed.
+**Decision:** The shared Zod schema runs again on the server, plus a server-only
+image byte/format/size refinement. 422 carries per-field Polish messages.
+**Rejected alternatives:** Trust client validation — insecure and unreliable.
+**Consequences:** (+) guarantees; (−) rules duplicated in execution (not in source —
+schema is shared).
+**Review trigger:** If validation moves to a shared edge function.
 
-### Carry image analysis (text), not the raw image, into chat
-**Status:** Accepted · **Date:** 2026-06-17
-**Context:** Re-sending the image every chat turn is costly and slow; the vision result is already textual.
-**Decision:** `caseContext` carries the `imageAnalysis` text + form + decision + policyId; the image is analyzed once in `/api/analyze`.
-**Rejected alternatives:** Re-send image each turn — bandwidth/latency/cost for no benefit.
-**Consequences:** (+) Small, fast chat payloads. (−) Chat cannot "re-look" at the photo (acceptable; a new photo means a new case).
-**Review trigger:** If follow-ups need fresh visual re-analysis.
+### BE-3 — Node.js runtime for both routes
+**Status:** Accepted · **Date:** 2026-06-18
+**Context:** sharp requires Node; provider SDK works on Node; keeps runtimes uniform.
+**Decision:** Both route handlers run on the Node.js runtime.
+**Rejected alternatives:** Edge runtime — incompatible with sharp; image compression
+is mandatory (AC-10).
+**Consequences:** (+) compatible with sharp + provider; (−) no Edge cold-start
+benefit (irrelevant for MVP).
+**Review trigger:** If image processing moves off-request (e.g. to a worker).
 
-### Map provider failures to retryable errors; never fabricate
-**Status:** Accepted · **Date:** 2026-06-17
-**Context:** AC-23 forbids showing a fabricated/partial decision on failure.
-**Decision:** Catch provider/timeout errors; return a structured retryable error (analyze) or stream error (chat). No decision content on failure.
-**Rejected alternatives:** Return a best-effort partial — violates AC-23.
-**Consequences:** (+) Trustworthy failure mode. (−) User must retry.
-**Review trigger:** Adding automatic retry/backoff server-side.
+### BE-4 — Image bytes never bypass compression to the model
+**Status:** Accepted · **Date:** 2026-06-18
+**Context:** AC-10 mandates backend compression before the vision call.
+**Decision:** The vision call receives only the `lib/image.compress` output; the raw
+upload is discarded after compression.
+**Rejected alternatives:** Forward raw on "small" images — inconsistent, harder to
+test the guarantee.
+**Consequences:** (+) one code path, testable (TAC-03); (−) tiny CPU cost per
+request.
+**Review trigger:** If a provider requires original-resolution input.
 
 ---
 
 ## 7. Diagrams
 
-### Route handler internals — `/api/analyze`
-
+### Component / Class Diagram
 ```mermaid
 flowchart TD
-    A[POST multipart] --> B[formData parse]
-    B --> C{Zod valid?}
-    C -- no --> C1[400 field errors PL]
-    C -- yes --> D[Normalize/guard image]
-    D --> E[vision: image+form -> ImageAnalysis]
-    E --> F[load policy by requestType]
-    F --> G[decision: Output.object -> Decision]
-    G --> H{schema valid?}
-    H -- no --> H1[502 retryable]
-    H -- yes --> I[build firstMessage PL]
-    I --> J[200 JSON AnalyzeResponse]
-    E -. provider error .-> K[502/503 retryable PL]
-    G -. provider error .-> K
+    A[/api/analyze route/] --> V[lib/validation.parseAnalyzeForm]
+    A --> I[lib/image.compress sharp]
+    A --> P[lib/policies.loadPolicy]
+    A --> AIa[lib/ai.analyzeImage - multimodal]
+    A --> AId[lib/ai.decide - decision model]
+    C[/api/chat route/] --> P
+    C --> AIc[lib/ai.chatStream - decision model]
+    AIa -.-> OR[(OpenRouter)]
+    AId -.-> OR
+    AIc -.-> OR
 ```
 
-### Route handler internals — `/api/chat`
-
+### Sequence — analyze pipeline (happy + branch)
 ```mermaid
 sequenceDiagram
-    participant C as Client (useChat)
-    participant R as /api/chat
-    participant P as Policy loader
-    participant M as Model (OpenRouter)
-    C->>R: { messages, caseContext }
-    R->>R: validate caseContext (zod)
-    R->>P: getPolicy(caseContext.policyId)
-    P-->>R: policy text
-    R->>R: build system context + convertToModelMessages
-    R->>M: streamText(system, messages)
-    M-->>R: token stream
-    R-->>C: toUIMessageStreamResponse()
+    participant FE as Client
+    participant AN as /api/analyze
+    participant V as lib/validation
+    participant IMG as lib/image
+    participant AI as lib/ai
+    FE->>AN: multipart form + image
+    AN->>V: parseAnalyzeForm
+    alt invalid
+        V-->>AN: errors
+        AN-->>FE: 422 {errors PL}
+    else valid
+        V-->>AN: data
+        AN->>IMG: compress(image)
+        IMG-->>AN: optimized bytes
+        AN->>AI: analyzeImage(type, bytes)  [multimodal]
+        AI-->>AN: {description, usable}
+        AN->>AI: decide(form, analysis, policy) [decision model]
+        AI-->>AN: Decision (schema-valid)
+        AN-->>FE: 200 {decision, imageAnalysis, seedMessages, context}
+    end
+```
+
+### Sequence — provider failure
+```mermaid
+sequenceDiagram
+    participant AN as /api/analyze
+    participant AI as lib/ai
+    participant OR as OpenRouter
+    AN->>AI: analyzeImage / decide
+    AI->>OR: request
+    OR-->>AI: 5xx / timeout
+    AI-->>AN: throw
+    AN-->>AN: log (no secrets)
+    AN-->>AN: 502/503 {error, retryable:true}
+    Note over AN: No Decision object emitted (AC-30)
+```
+
+### Sequence — chat stream
+```mermaid
+sequenceDiagram
+    participant FE as useChat
+    participant CH as /api/chat
+    participant P as lib/policies
+    participant AI as lib/ai
+    FE->>CH: {messages, context}
+    CH->>P: loadPolicy(context.policyKind)
+    P-->>CH: policy markdown
+    CH->>AI: chatStream(messages, system=context+policy)
+    AI-->>CH: token stream
+    CH-->>FE: UI message stream
 ```
 
 ---
 
 ## 8. Testing Strategy
 
-> Integration layer mocks **only** the external LLM API (AI SDK mock model). Validation, error mapping, and policy selection are tested without network.
-
 ### Test scenarios for this area
 
 | Scenario | Type | Input | Expected output | Edge cases |
 |---|---|---|---|---|
-| Valid analyze | Integration | Valid multipart + mock model | 200 AnalyzeResponse with decision + analysis | Each request type |
-| Missing field | Integration | Omit `model` | 400 with `fields.model` (PL) | Multiple missing fields |
-| Future date | Integration | purchaseDate > today | 400 with `fields.purchaseDate` | Boundary = today |
-| Reason rule | Integration | complaint w/o reason; return w/o reason | 400 for complaint; 200 for return | — |
-| Bad image | Integration | gif / oversize | 400 (or 413) not forwarded to model | Exactly cap size |
-| Policy selection | Integration | complaint vs return | complaint-policy vs return-policy injected | wrong file → config error |
-| Provider error | Integration | mock throws | 502/503 retryable PL; no decision body | timeout simulated |
-| Decision schema invalid | Integration | mock returns missing `justification` | 502 invalid; not surfaced as decision | missing `outcome` |
-| Chat stream | Integration | messages + caseContext, mock stream | UI message stream emitted | empty messages → 400 |
-| Secret safety | Unit/Build | inspect client bundle | no API key in client output | — |
+| Valid complaint pipeline | Integration (mock LLM) | Full form + image | 200, Decision present, policy = complaint | Reason at min length |
+| Missing reason (complaint) | Integration | reason empty | 422 with Polish field error | Whitespace reason |
+| Future purchase date | Integration | date > today | 422 | date = today passes |
+| Bad format / oversize | Integration | gif / 12 MB | 422 naming formats/limit | exactly 10 MB passes |
+| Compression applied | Unit + Integration | large jpeg | bytes to model ≤ bound, not raw | already-small image still re-encoded |
+| Unusable image → NMI | Integration | mock vision usable=false | 200 Decision outcome=NEEDS_MORE_INFO | contradictory signals |
+| Provider 5xx | Integration | mock OpenRouter error | 502/503 retryable, no Decision | timeout |
+| Policy selection | Unit | requestType=return | loads return-policy.md | switch to complaint |
+| Chat stream context | Integration | messages + context | system prompt contains policy + context; streamed reply | empty messages guarded |
+| Two-model wiring | Integration | run pipeline | analyzeImage→multimodal id, decide/chat→decision id | env overrides honored |
 
 ### Technical acceptance criteria
-
-- **TAC-201:** `/api/analyze` returns `400` with a field-keyed PL error map for every server-side validation failure, independent of the client.
-- **TAC-202:** The image is decoded and size-capped server-side before any vision call; oversized/invalid images never reach the model.
-- **TAC-203:** The policy injected matches `requestType` (complaint↔complaint-policy, return↔return-policy), asserted by integration test.
-- **TAC-204:** On a mocked provider error, the route returns a retryable error and no decision/partial content.
-- **TAC-205:** `/api/chat` returns a UI message stream consumable by `useChat`, using `toUIMessageStreamResponse()`.
-- **TAC-206:** AI routes declare `runtime="nodejs"` and a raised `maxDuration`; no provider secret appears in any client-shipped code.
+- **TAC-002-01** `/api/analyze` returns `422` with per-field Polish messages for
+  every AC-04–AC-09 violation and runs no model call in that case.
+- **TAC-002-02** The artifact passed to the vision model is the compressed output and
+  is ≤ the configured bound (never the raw upload).
+- **TAC-002-03** When the vision result is `usable=false`, the decision is
+  `NEEDS_MORE_INFO`; no APPROVE/REJECT is produced (AC-18).
+- **TAC-002-04** On any provider error, the response is a retryable `502/503` with no
+  `decision` field (AC-29/30).
+- **TAC-002-05** `analyzeImage` uses `OPENROUTER_MULTIMODAL_MODEL`; `decide` and
+  `chatStream` use `OPENROUTER_DECISION_MODEL` (distinct, from env).
+- **TAC-002-06** `/api/chat` injects the correct policy (by `policyKind`) and the
+  full case context into the system prompt and returns a UI message stream.
+- **TAC-002-07** Both routes run on the Node.js runtime (sharp + provider load
+  without runtime errors).
+```

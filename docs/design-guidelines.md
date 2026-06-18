@@ -1,152 +1,196 @@
 # Design Guidelines — Spotify-inspired Design System
 
-A **dark-first** design system that mimics the look and feel (vibe) of the **Spotify Web Player** (`https://open.spotify.com/`). Use these tokens for any UI we build so it stays visually consistent with the Spotify brand.
+A design system that mimics the look and feel of the **Spotify Web Player**
+(<https://open.spotify.com/>). Use it to build a product that shares Spotify's
+dark, music-first, high-contrast personality.
 
-> Extracted from the live Spotify Web Player on 2026-06-17 using Playwright. Values map to Spotify's internal **Encore** CSS custom properties (e.g. `--background-base`, `--text-subdued`, `--text-bright-accent`).
+> Tokens were extracted from the live Spotify Web Player computed styles on
+> 2026-06-17. Machine-readable values live in
+> [`../assets/design-tokens.json`](../assets/design-tokens.json).
 
 ---
 
 ## 1. Assets
 
-| Asset | File | Usage |
+| Asset | File | Notes |
 |---|---|---|
-| Homepage screenshot | [../assets/homepage.png](../assets/homepage.png) | Reference layout / vibe |
-| Logo wordmark (SVG) | [../assets/logo.svg](../assets/logo.svg) | Full "Spotify" wordmark, `fill: currentColor` |
-| Logo icon (SVG) | [../assets/logo-icon.svg](../assets/logo-icon.svg) | Green circle icon only, `#1ED760` |
-| Favicon (SVG) | [../assets/favicon.svg](../assets/favicon.svg) | Browser tab icon (green circle, black mark) |
-| Design tokens (JSON) | [../assets/design-tokens.json](../assets/design-tokens.json) | Machine-readable tokens |
+| Homepage screenshot | [`../assets/homepage.png`](../assets/homepage.png) | Full-page capture of the logged-out web player |
+| Logo (icon) | [`../assets/logo.svg`](../assets/logo.svg) | Spotify circle mark, green `#1ED760`, `viewBox 0 0 24 24` |
+| Favicon | [`../assets/favicon.svg`](../assets/favicon.svg) | Rounded dark tile with the green mark, 32×32 |
+| Design tokens | [`../assets/design-tokens.json`](../assets/design-tokens.json) | Full token set |
+
+> The original `favicon32.png` is served via a git-LFS-backed CDN and could not be
+> downloaded as a binary in this environment, so a crisp, scalable `favicon.svg`
+> was produced from the extracted logo path instead.
 
 ---
 
 ## 2. Colors
 
-The system is **dark-first**. The signature element is **Spotify Green** on near-black surfaces.
+Spotify is a **dark theme first**. Almost everything sits on near-black surfaces
+with white/grey text and a single vivid green as the only saturated accent.
 
 ### Brand
+
 | Token | Hex | Usage |
 |---|---|---|
-| `brand.primary` | `#1ED760` | Primary CTA, play button, active states, accents |
-| `brand.primaryHover` | `#3BE477` | Hover state for primary green |
-| `brand.primaryPress` | `#1AB955` | Pressed state |
-| `brand.classic` | `#1DB954` | Classic Spotify green (legacy buttons) |
-| `brand.error` | `#F15E6C` | Errors / destructive |
+| `brand.primary` | `#1ED760` | Primary actions, play button, active states, brand accent |
+| `brand.primaryHover` | `#3BE477` | Hover on green buttons |
+| `brand.primaryActive` | `#1AAF4E` | Pressed state |
+| `brand.legacyGreen` | `#1DB954` | Legacy Spotify green (alt accent) |
+| `brand.error` | `#E22134` | Errors / destructive |
 | `brand.warning` | `#FFA42B` | Warnings |
 
-### Backgrounds (surfaces)
-| Token | Value | Usage |
-|---|---|---|
-| `background.base` | `#121212` | App background |
-| `background.highlight` | `#1F1F1F` | Hovered rows / raised surfaces |
-| `background.elevatedBase` | `#1F1F1F` | Cards, menus, modals |
-| `background.elevatedHighlight` | `#2A2A2A` | Hovered card / menu item |
-| `background.press` | `#000000` | Sidebar, now-playing bar, pressed |
-| `background.tintedBase` | `rgba(255,255,255,0.07)` | Subtle fills over art |
-| `background.overlay` | `rgba(0,0,0,0.7)` | Image/scrim overlays |
+### Backgrounds (dark surfaces)
 
-### Text
 | Token | Hex | Usage |
 |---|---|---|
-| `text.base` / `primary` | `#FFFFFF` | Headings, primary text |
-| `text.secondary` / `subdued` | `#B3B3B3` | Secondary text, metadata, inactive nav |
-| `text.muted` | `#6A6A6A` | Disabled |
-| `text.brightAccent` | `#1ED760` | Links / accent text |
-| `text.onAccent` | `#000000` | Text on green buttons (black, not white) |
+| `background.default` | `#000000` | App frame, player bar, top of gradients |
+| `background.base` | `#121212` | Main content background |
+| `background.tinted` | `#181818` | Card / tile background |
+| `background.elevated` | `#1F1F1F` | Elevated surfaces, icon buttons, menus |
+| `background.elevatedHighlight` | `#2A2A2A` | Card hover, list-row hover |
+| `background.press` | `#333333` | Pressed/active fills, dividers |
+| `background.overlay` | `rgba(0,0,0,0.7)` | Modal scrims, image overlays |
 
-> **Key rule:** text on the green primary button is **black (`#000000`)**, not white — this is core to the Spotify look.
+### Text
+
+| Token | Hex | Usage |
+|---|---|---|
+| `text.primary` | `#FFFFFF` | Headings, primary content |
+| `text.secondary` | `#B3B3B3` | Secondary labels, nav, metadata |
+| `text.muted` | `#7C7C7C` | Disabled / least-important text |
+| `text.onBrand` | `#000000` | Text/icon on top of the green button |
+
+> **Contrast rule:** text on the green `#1ED760` button is always **black**, never
+> white — this is the signature Spotify treatment.
 
 ---
 
 ## 3. Typography
 
-Spotify ships a proprietary font (**SpotifyMixUI**, evolved from **Circular**). We don't have license to it; use the fallback stack — `Helvetica Neue`/`Arial` render closely. If self-hosting, a near match is **Circular Std** or the open alternative **Gotham**/**Montserrat** for display.
+Spotify ships its own typeface, exposed in computed styles as **`Spotify Mix`**
+(`SpotifyMixUI`) for body and **`Spotify Mix Title`** (`SpotifyMixUITitle`) for
+large headings — the modern successor to **Circular**. Since these are
+proprietary, fall back to **Circular → Helvetica Neue → Helvetica → Arial →
+sans-serif**.
 
 ```css
---font-primary: "SpotifyMixUI", "Circular", "Helvetica Neue", Helvetica, Arial, sans-serif;
---font-title:   "SpotifyMixUITitle", "Circular", "Helvetica Neue", Helvetica, Arial, sans-serif;
+--font-primary: "Spotify Mix", "Circular", "Helvetica Neue", Helvetica, Arial, sans-serif;
+--font-title:   "Spotify Mix Title", "Circular", "Helvetica Neue", Helvetica, Arial, sans-serif;
 ```
 
 ### Weights
-| Name | Value |
-|---|---|
-| regular | 400 |
-| medium | 500 |
-| semibold | 600 |
-| bold | 700 |
-| black | 900 (large hero titles) |
+
+| Name | Value | Usage |
+|---|---|---|
+| regular | 400 | Body text |
+| medium | 500 | Slightly emphasized labels |
+| semibold | 600 | Buttons in dialogs, captions |
+| bold | 700 | Headings, nav links, primary buttons |
+| black | 900 | Hero / display headlines |
 
 ### Size scale
+
 | Token | Size | Usage |
 |---|---|---|
-| `xs` | 11px | Tiny labels |
-| `sm` | 12px | Captions, metadata |
+| `xs` | 11px | Micro labels |
+| `sm` | 12px | Metadata, captions |
 | `base` | 14px | Body, buttons |
-| `md` | 16px | Default body / inputs |
-| `lg` | 20px | Sub-headings |
-| `xl` | 24px | Section titles (e.g. "Utwory na czasie") |
+| `md` | 16px | Default body / nav |
+| `lg` | 20px | Sub-section titles |
+| `xl` | 24px | Section headings (`h2`) |
 | `2xl` | 32px | Page titles |
-| `3xl`–`5xl` | 48–96px | Hero / playlist header titles (use weight 700–900, `letterSpacing: -0.04em`) |
+| `3xl` | 48px | Hero titles |
+| `4xl` | 72px | Display / playlist hero |
 
-Section headings use **font weight 700** at **24px**. Hero/playlist titles scale up dramatically (Spotify uses up to ~96px black).
+Line heights: tight `1.2` (headings), base `1.4` (body), relaxed `1.6` (long text).
 
 ---
 
 ## 4. Spacing
 
-Base unit **4px**. Scale: `4, 8, 12, 16, 20, 24, 28, 32, 40, 48, 64`. Card padding is typically `16px`; nav items `8px 12px`.
+Base unit is **4px**; layout is built on a 4/8 grid.
+
+`4 · 8 · 12 · 16 · 20 · 24 · 28 · 32 · 40 · 48 · 64` (px)
+
+Common: card padding `12–16px`, section gaps `24px`, page padding `24–32px`.
 
 ---
 
 ## 5. Border Radius
 
+Spotify mixes **fully rounded pills** for actions with **gently rounded tiles**
+for content.
+
 | Token | Value | Usage |
 |---|---|---|
-| `xs` | 2px | Progress bars |
-| `sm` | 4px | Small chips |
-| `md` | 6px | Album/track art, small cards |
-| `lg` | 8px | Cards, sidebar, modals |
-| `xl` | 16px | Large containers |
-| `pill` / `full` | 500px / 9999px | Buttons, search input, chips |
-| `circle` | 50% | Play buttons, avatars, icon buttons |
-
-> The most common radii on the page are **9999px (pills)**, **6px (art)**, and **50% (circles)** — these three define the shape language.
+| `xs` | 2px | Tiny chips, progress handles |
+| `sm` | 4px | Inputs, small controls |
+| `card` | 6px | Album/playlist cards & cover art (most common) |
+| `md` | 8px | Larger panels |
+| `lg` | 16px | Modals, large containers |
+| `pill` / `full` | 9999px | Buttons, tags, search field, avatars |
+| `circle` | 50% | Play button, icon buttons, profile picture |
 
 ---
 
 ## 6. Components
 
-### Buttons
-- **Primary** — green pill. Background `#1ED760`, **black** text, weight 700, `padding 12px 32px`, `min-height 48px`, `border-radius 9999px`. Hover: scale `1.04` + lighten to `#3BE477`. Use for the single most important action (Sign up, Play).
-- **Secondary** — transparent pill, white text, `1px solid rgba(255,255,255,0.3)` border, white border on hover.
-- **Chip / filter** — `#1F1F1F` pill, white text, 32px tall; hover `#2A2A2A`.
-- **Icon circle** — 48px circle, `#1F1F1F`, white icon.
-- **Play button** — 48px green circle (`#1ED760`), black icon, hover scale `1.06`. The iconic floating play control.
+### Primary button (the "green pill")
+- Background `#1ED760`, text **black**, weight 700, pill radius `9999px`.
+- Padding ~`8px 32px`; hover lightens to `#3BE477` **and scales to ~1.04** with a
+  subtle transition — the signature Spotify "grow on hover" micro-interaction.
 
-### Search input
-`#1F1F1F` background, white text, `#B3B3B3` placeholder, **full pill** radius, 48px tall, transparent border → white border on focus.
+### Secondary button
+- Transparent background, white text, `1px` grey border (`#7C7C7C`), pill radius.
+- Hover: border becomes white and the button scales up slightly.
 
-### Card (album / playlist)
-`#181818` background → `#282828` on hover, `8px` radius, `16px` padding, `background-color 0.3s ease` transition. Art image uses `6px` radius. Reveals a green play button on hover.
+### Text / ghost button
+- No background; grey text `#B3B3B3` → white on hover. Used for "Log in", tabs,
+  and tertiary actions.
 
-### Top bar
-Semi-transparent black (`rgba(0,0,0,0.5)`), ~64px tall, white controls. Often becomes opaque/tinted on scroll.
+### Play button
+- Green circle `#1ED760`, black play glyph, `~48px`. Appears on card hover and in
+  the player. Scales up on hover.
 
-### Sidebar
-Black (`#000000`), `8px` radius panels. Inactive items `#B3B3B3`, active/hover `#FFFFFF`.
+### Card / tile
+- Background `#181818`, radius `6px`, padding `12px`; hover background `#282828`.
+- Cover art on top, bold white title, grey secondary line below.
 
-### Now-playing bar
-Fixed bottom bar, black, ~86px tall. Progress track `rgba(255,255,255,0.3)`, fill white — turning **green (`#1ED760`)** on hover/scrub.
+### Header / top bar
+- Background `#121212` (often a color gradient near the top of a playlist), padding
+  `16px`. Contains nav, search, and account controls.
+
+### Navigation
+- Grey `#B3B3B3` links, weight 700; active item turns white `#FFFFFF`.
+
+### Player bar (bottom)
+- Solid black `#000000`, ~`72px` tall, white text/icons, green progress + green
+  active controls.
+
+### Input / search
+- White `#FFFFFF` field, dark text `#121212`, pill radius `9999px`.
 
 ---
 
 ## 7. Logo Usage
 
-- **Wordmark** ([logo.svg](../assets/logo.svg)) uses `fill: currentColor` — set the color in CSS. On dark backgrounds use white (`#FFFFFF`); the green version is reserved for marketing.
-- **Icon** ([logo-icon.svg](../assets/logo-icon.svg)) is the green circle — use in compact spaces, avatars, app icons.
-- Keep clear space around the logo equal to the height of the circle icon.
-- Never stretch, recolor to arbitrary colors, or place the green logo on a clashing background. On light backgrounds use the black wordmark.
+- [`assets/logo.svg`](../assets/logo.svg) is the green circle mark (`#1ED760`,
+  `viewBox 0 0 24 24`). Recolor by changing the `fill`.
+- On dark surfaces use the green mark as-is. On light surfaces, place it inside a
+  dark tile (see `favicon.svg`) or invert to a single solid color.
+- Keep clear space around the mark equal to ~25% of its height. Do not stretch,
+  add shadows, or place it on busy imagery without a scrim.
 
 ---
 
 ## 8. Visual Style Summary
 
-Spotify's vibe is **bold, dark, and immersive** — near-black surfaces (`#121212`) let album art and a single electric **green (`#1ED760`)** accent pop. Typography is clean, geometric, and confident, with **huge bold display titles** and quiet gray (`#B3B3B3`) secondary text. Shapes are **rounded and friendly**: pill buttons, circular play controls, and soft-cornered cards that lift on hover. The interface feels **content-first and tactile** — minimal chrome, smooth hover transitions, and the green accent always signalling "play" and energy.
+Spotify's identity is **dark, immersive, and content-forward**. Near-black
+surfaces let album art and a single electric green (`#1ED760`) carry all the
+energy, while bold white type and generous spacing keep the dense music catalog
+readable. Rounded pill buttons that subtly grow on hover, perfectly circular play
+controls, and softly rounded `6px` cover-art tiles make the interface feel
+tactile and playful. The overall vibe is modern, confident, and unmistakably
+music-first — minimal chrome, maximum content.
