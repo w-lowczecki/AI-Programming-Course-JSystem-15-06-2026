@@ -11,13 +11,13 @@
 
 ## O repozytorium
 
-To repozytorium zawiera materiały do 5-dniowego kursu **AI w Programowaniu** prowadzonego przez JSystems. Kurs skupia się na workflow pracy z agentami AI (Claude Code, OpenAI Codex CLI), a nie na jednym konkretnym narzędziu.
+To repozytorium zawiera materiały do 5-dniowego kursu **AI w Programowaniu** prowadzonego przez Łukasza Matuszewskiego z ramienia firmy JSystems. Kurs skupia się na powtarzalnym workflow pracy z różnymi agentami AI (np. Claude Code, OpenAI Codex), a nie na jednym konkretnym narzędziu.
 
 Uczestnicy pracują w swoim preferowanym języku programowania (Java, Python, C#, Go, Rust i inne). Prowadzący demonstruje rozwiązania w **TypeScript/Node.js**, na przykład z **Vercel AI SDK**.
 
 ### Projekt kursu
 
-Uczymy się razem Agentów AI do kodowania (np. Codex, Claude, Antigravity) budując razem Multimodalną aplikację AI — na przykład agent weryfikujący usterki, zwroty i reklamacje sprzętu elektronicznego.
+Uczymy się razem Agentów AI do kodowania (np. Codex, Claude, Antigravity) budując Multimodalną aplikację AI — na przykład agent weryfikujący usterki, zwroty i reklamacje sprzętu elektronicznego. Każdy uczestnik może budować inną aplikację niż prowadzący, podążając za wspólnym workflow pracy z agentami i za planem szkolenia, ale podejmując własne decyzje na każdym etapie. Prowadzący udostępnia swoje prompty na wzór, każdy może je jednak modyfikować.
 
 Konkretny projekt i tech stack ustalane są live z grupą poprzez proces: research/dyskusja → PRD (Product Requirements Document) → Design System → ADR (Architecture Decision Records) → Plan z matrycą zależności zadań i sub-agentów → implementacja z sub-agentami.
 
