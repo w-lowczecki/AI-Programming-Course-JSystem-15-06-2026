@@ -17,7 +17,9 @@ Uczestnicy pracują w swoim preferowanym języku programowania (Java, Python, C#
 
 ### Projekt kursu
 
-Multimodalna aplikacja AI — na przykład agent weryfikujący usterki, zwroty i reklamacje sprzętu elektronicznego. Konkretny projekt i tech stack ustalane są live z grupą po przez proces: research → PRD → ADR → implementacja z agentami.
+Uczymy się razem Agentów AI do kodowania (np. Codex, Claude, Antigravity) budując razem Multimodalną aplikację AI — na przykład agent weryfikujący usterki, zwroty i reklamacje sprzętu elektronicznego.
+
+Konkretny projekt i tech stack ustalane są live z grupą poprzez proces: research/dyskusja → PRD (Product Requirements Document) → Design System → ADR (Architecture Decision Records) → Plan z matrycą zależności zadań i sub-agentów → implementacja z sub-agentami.
 
 ---
 
@@ -52,9 +54,8 @@ Główne notatki i zasoby znajdziesz w folderze `/course-materials`:
 ```
 app/                 Aplikacja budowana podczas kursu (start: pusty scaffold)
 assets/              Design tokens, logo, favicon (dodawane w trakcie kursu)
-docs/                PRD, ADR, design system (tworzone podczas kursu)
+docs/                PRD, ADR, design system, plany (tworzone podczas kursu)
 course-materials/    Notatki, skrypty, przykłady, badania
-examples/            Przykładowe konfiguracje agentów (Java/Spring Boot)
 ```
 
 ---
@@ -81,7 +82,8 @@ Szczegóły w [`.env.example`](.env.example).
 
 Wymagane:
 - Klucz API (OpenAI, OpenRouter, lub inny provider)
-- Agent CLI (Claude Code lub Codex)
+- Agent AI z zapasem tokenów (np. Claude Code lub Codex)
+- Node.js i npm (do instalowania agentów CLI i skills, aplikacja może bazować np. na BE w Java lub Python)
 - Git
 
 ---
