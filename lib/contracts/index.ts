@@ -58,10 +58,15 @@ export type EquipmentCategory = (typeof EQUIPMENT_CATEGORIES)[number];
 
 // ---------------------------------------------------------------------------
 // UIMessageSchema — permissive schema for AI SDK UIMessage
+// Relaxed for @ai-sdk/react v4 useChat compatibility (2026-06-18):
+//   useChat strips `id` from the wire payload when sendExtraMessageFields=false
+//   (the default). Source: @ai-sdk/react/dist/index.js triggerRequest(), which
+//   destructures only { role, content, experimental_attachments, data,
+//   annotations, toolInvocations, parts } — no `id`.
 // ---------------------------------------------------------------------------
 
 export const UIMessageSchema = z.object({
-  id: z.string(),
+  id: z.string().optional(),
   role: z.enum(["system", "user", "assistant", "data"]),
   content: z.string(),
   parts: z.array(z.record(z.unknown())).optional(),

@@ -483,7 +483,7 @@ describe("AnalyzeResponseSchema", () => {
 // ---------------------------------------------------------------------------
 
 describe("ChatRequestBodySchema", () => {
-  it("parses a valid chat request body", () => {
+  it("parses a valid chat request body with id present", () => {
     const result = ChatRequestBodySchema.safeParse({
       messages: [
         { id: "1", role: "user", content: "Mam pytanie dotyczące mojego zwrotu." },
@@ -503,5 +503,45 @@ describe("ChatRequestBodySchema", () => {
       },
     });
     expect(result.success).toBe(true);
+  });
+
+  // v4 useChat compatibility — id absent from wire payload (chat 422 fix 2026-06-18)
+  it("parses v4 useChat wire payload WITHOUT id (regression guard for 422 bug)", () => {
+    const result = ChatRequestBodySchema.safeParse({
+      messages: [
+        { role: "user", content: "Mam pytanie dotyczące mojego zwrotu." },
+        { role: "assistant", content: "Oczywiście, proszę podaj szczegóły." },
+      ],
+      context: {
+        requestType: "return",
+        category: "Tablet",
+        model: "iPad Pro",
+        purchaseDate: pastISO(),
+        imageDescription: "Tablet bez uszkodzeń.",
+        policyKind: "return",
+      },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects request body missing context key entirely", () => {
+    const result = ChatRequestBodySchema.safeParse({
+      messages: [{ role: "user", content: "Pytanie" }],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects request body missing messages key entirely", () => {
+    const result = ChatRequestBodySchema.safeParse({
+      context: {
+        requestType: "return",
+        category: "Tablet",
+        model: "iPad Pro",
+        purchaseDate: pastISO(),
+        imageDescription: "Tablet bez uszkodzeń.",
+        policyKind: "return",
+      },
+    });
+    expect(result.success).toBe(false);
   });
 });

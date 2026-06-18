@@ -17,6 +17,7 @@ import { describe, it, expect } from "vitest";
 import {
   IntakeFormSchema,
   ChatRequestBodySchema,
+  UIMessageSchema,
   AnalyzeResponseSchema,
   CaseContextSchema,
   type CaseContext,
@@ -70,6 +71,26 @@ function buildChatRequestBody(contextOverrides?: Partial<CaseContext>) {
   ];
 
   return { messages, context };
+}
+
+/**
+ * Build the actual wire payload that @ai-sdk/react v4 useChat POSTs on follow-up turns.
+ * Source: node_modules/@ai-sdk/react/dist/index.js lines 310-330 (triggerRequest).
+ * When sendExtraMessageFields=false (default), useChat strips id and createdAt —
+ * only role, content, and conditionally present fields are sent.
+ */
+function buildV4WireMessages() {
+  // Exactly what useChat destructures and sends — no id, no createdAt
+  return [
+    {
+      role: "assistant" as const,
+      content: "Oto wstępna ocena Twojego zgłoszenia.",
+    },
+    {
+      role: "user" as const,
+      content: "Czy mogę liczyć na pozytywne rozpatrzenie?",
+    },
+  ];
 }
 
 // ---------------------------------------------------------------------------
@@ -196,6 +217,22 @@ describe("Drift guard B — useChat body { messages, context } matches ChatReque
       })
     );
     expect(result.success).toBe(true);
+  });
+
+  // v4 useChat compatibility — id is absent from actual wire payload (chat 422 fix 2026-06-18)
+  it("v4 useChat wire payload WITHOUT id passes ChatRequestBodySchema (regression guard for 422 bug)", () => {
+    const result = ChatRequestBodySchema.safeParse({
+      messages: buildV4WireMessages(),
+      context: buildChatRequestBody().context,
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("v4 useChat wire payload without id passes UIMessageSchema per-message", () => {
+    for (const msg of buildV4WireMessages()) {
+      const result = UIMessageSchema.safeParse(msg);
+      expect(result.success, `message role=${msg.role} without id should parse`).toBe(true);
+    }
   });
 });
 

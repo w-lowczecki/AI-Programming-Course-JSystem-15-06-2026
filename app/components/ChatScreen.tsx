@@ -56,8 +56,8 @@ export function ChatScreen({ analyzeResponse, onNewRequest }: ChatScreenProps) {
     // v4 static body — context is immutable per session, sent with every request (AC-23)
     body: { context },
     // Seed the conversation with the decision assistant message
-    initialMessages: seedMessages.map((m) => ({
-      id: m.id,
+    initialMessages: seedMessages.map((m, i) => ({
+      id: m.id ?? `seed-${i}`,
       role: m.role as "user" | "assistant" | "system",
       content: m.content,
     })),
