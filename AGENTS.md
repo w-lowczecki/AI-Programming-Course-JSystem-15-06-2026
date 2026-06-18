@@ -64,7 +64,7 @@ Verify only the scope relevant to your change. If the change affects runtime beh
 
 **Verification:** Always start the app before committing. Tests passing ≠ app working.
 
-**Env Vars:** See `.env.example` (OPENROUTER_API_KEY or OPENAI_API_KEY required)
+**Env Vars:** See `.env` (OPENROUTER_API_KEY or OPENAI_API_KEY required)
 
 ### Commit Rules
 - Commit only after verification passes and the changed scope is in a working state.
