@@ -36,7 +36,3 @@ You should only provide to the specialized subagents information needed to compl
 
 If enything is unclear, you should ask minimum 5 questions to make sure that you understand everything correct and that you don't have any doubts about what you should do and how this process should work.
 
----
-
-Result of this prompt is here:
-[day-3-PLAN-dependency-matrix-pararelizm-map.md](../03-2026/day-3-PLAN-dependency-matrix-pararelizm-map.md)
