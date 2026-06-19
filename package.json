@@ -1,0 +1,41 @@
+{
+  "name": "hardware-service-decision-copilot",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "test": "vitest run",
+    "test:e2e": "playwright test"
+  },
+  "dependencies": {
+    "next": "16.2.9",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "ai": "4.3.19",
+    "@ai-sdk/react": "1.2.12",
+    "@openrouter/ai-sdk-provider": "0.4.6",
+    "zod": "3.25.76",
+    "sharp": "0.34.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.9",
+    "tailwindcss": "^4",
+    "typescript": "^5",
+    "vitest": "3.2.6",
+    "@vitejs/plugin-react": "4.7.0",
+    "@testing-library/react": "16.3.2",
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/user-event": "14.6.1",
+    "jsdom": "26.1.0",
+    "@playwright/test": "1.61.0",
+    "vite-tsconfig-paths": "5.1.4"
+  }
+}

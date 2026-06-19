@@ -1,0 +1,1 @@
+- [PoC scaffold state](project-poc-scaffold.md) — Task 0.1 done; Next.js+Vitest+Playwright bootstrapped on feat/poc-implementation (commit 802fe22)

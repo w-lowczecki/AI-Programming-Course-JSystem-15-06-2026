@@ -5,6 +5,18 @@ dist/
 .next/
 .vite/
 
+# Next.js generated types
+next-env.d.ts
+
+# TypeScript incremental build cache
+*.tsbuildinfo
+
+# QA manual-smoke screenshots (codified by e2e specs instead)
+smoke-*.png
+
+# Temp scaffold dir (bootstrap artifact)
+scaffold-tmp/
+
 # IDE
 .idea/
 *.iws
